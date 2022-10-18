@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+# 							-*- makefile -*-
+# debian/rules file for the Debian/GNU Linux r-cran-nlme package
+# Copyright 2004 - 2018 by Dirk Eddelbuettel <edd@debian.org>
+#                       and Doug Bates <bates@stat.wisc.edu>
+
+%:
+	dh $@ --buildsystem R
+
+
+
+
+

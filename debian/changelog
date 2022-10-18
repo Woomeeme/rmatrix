@@ -1,0 +1,1018 @@
+rmatrix (1.3-4-2) unstable; urgency=medium
+
+  * Simple rebuild for unstable following Debian 11 release
+
+  * debian/control: Set Build-Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 16 Aug 2021 21:18:11 -0500
+
+rmatrix (1.3-4-1) experimental; urgency=medium
+
+  * New upstream release (to experimental during freeze)
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 05 Jun 2021 13:03:01 -0500
+
+rmatrix (1.3-3-1) experimental; urgency=medium
+
+  * New upstream release (to experimental during freeze)
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 05 May 2021 15:18:23 -0500
+
+rmatrix (1.3-2-1) unstable; urgency=medium
+
+  * New upstream release			(Closes: #979353)
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 06 Jan 2021 13:17:49 -0600
+
+rmatrix (1.3-0-1) unstable; urgency=medium
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version
+  * debian/control: Set Standards-Version: to current version 
+  * debian/control: Switch to virtual debhelper-compat (= 11)
+  * debian/compat: Removed
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 22 Dec 2020 08:13:45 -0600
+
+rmatrix (1.2-18-1) unstable; urgency=medium
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version
+  * debian/control: Set Standards-Version: to current version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 03 Dec 2019 13:43:42 -0600
+
+rmatrix (1.2-17-2) unstable; urgency=medium
+
+  * Source-only upload
+  
+  * debian/control: Set Build-Depends: to current R version
+  * debian/control: Set Standards-Version: to current version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 18 Aug 2019 07:39:22 -0500
+
+rmatrix (1.2-17-1) unstable; urgency=medium
+
+  * New upstream release
+  
+  * debian/control: Set Build-Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 24 Mar 2019 12:43:44 -0500
+
+rmatrix (1.2-16-1) unstable; urgency=medium
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version
+  * debian/control: Set Standards-Version: to current version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 09 Mar 2019 07:35:33 -0600
+
+rmatrix (1.2-15-1) unstable; urgency=medium
+
+  * New upstream release
+  
+  * debian/control: Set Build-Depends: to current R version
+  * debian/control: Set Standards-Version: to current version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 07 Nov 2018 20:23:29 -0600
+
+rmatrix (1.2-14-1.1) unstable; urgency=medium
+
+  * (Inofficial) Rebuild for R 3.5.0
+
+  * Manual override for ${R:Depends} while dh-r is looked at
+
+  * debian/control: Set Build-Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 28 Apr 2018 14:49:04 -0500
+
+rmatrix (1.2-14-1) unstable; urgency=medium
+
+  * New upstream release
+
+  * debian/control: Set Standards-Version: to current version 
+  * debian/control: Add Vcs-Browser: and Vcs-Git:
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 09 Apr 2018 13:07:56 -0500
+
+rmatrix (1.2-13-2) unstable; urgency=medium
+
+  * Rebuilding under updated dh-r package to correct installation
+    directory for 'Priority: recommended'	(Closes: #894887)
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 05 Apr 2018 07:06:03 -0500
+
+rmatrix (1.2-13-1) unstable; urgency=medium
+
+  * New upstream release
+  
+  * debian/control: Set Build-Depends: to current R version
+  * debian/control: Set Standards-Version: to current version 
+  * debian/control: Switch from cdbs to dh-r
+  * debian/rules: Idem
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 02 Apr 2018 08:06:03 -0500
+
+rmatrix (1.2-12-1) unstable; urgency=medium
+
+  * New upstream release
+  
+  * debian/control: Set Standards-Version: to current version 
+  * debian/control: Set Build-Depends: to current R version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 16 Nov 2017 20:32:26 -0600
+
+rmatrix (1.2-11-1) unstable; urgency=medium
+
+  * New upstream release
+  
+  * debian/control: Set Standards-Version: to current version 
+  * debian/control: Set Build-Depends: to current R version 
+  * debian/compat: Set level to 9
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 17 Aug 2017 20:38:32 -0500
+
+rmatrix (1.2-10-1) unstable; urgency=medium
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version
+  * debian/control: Add Depends: on ${misc:Depends}
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 28 Apr 2017 20:35:08 -0500
+
+rmatrix (1.2-8-1) unstable; urgency=medium
+
+  * New upstream release
+  
+  * debian/control: Set Build-Depends: to current R version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 31 Jan 2017 22:11:25 -0600
+
+rmatrix (1.2-7.1-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 01 Sep 2016 08:58:31 -0500
+
+rmatrix (1.2-7-1) unstable; urgency=medium
+
+  * New upstream release
+
+  * debian/control: Set Standards-Version: to current version 
+  * debian/control: Set Build-Depends: to current R version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 28 Aug 2016 18:35:31 -0500
+
+rmatrix (1.2-6-1) unstable; urgency=medium
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 03 May 2016 13:33:48 -0500
+
+rmatrix (1.2-5-1) unstable; urgency=medium
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 17 Apr 2016 09:44:11 -0500
+
+rmatrix (1.2-4-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 01 Mar 2016 06:21:32 -0600
+
+rmatrix (1.2-3-1) unstable; urgency=low
+
+  * New upstream release
+ 
+  * debian/control: Set Build-Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 28 Nov 2015 08:43:42 -0600
+
+rmatrix (1.2-2-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 08 Jul 2015 06:39:30 -0500
+
+rmatrix (1.2-1-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 01 Jun 2015 21:44:01 -0500
+
+rmatrix (1.2-0-1) unstable; urgency=low
+
+  * New upstream release
+  
+  * debian/control: Set Build-Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 04 Apr 2015 13:51:14 -0500
+
+rmatrix (1.1-5-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version
+  * debian/control: Set Standards-Version: to current version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 18 Jan 2015 14:26:43 -0600
+
+rmatrix (1.1-4-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 15 Jun 2014 15:42:27 -0500
+
+rmatrix (1.1-3-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 31 Mar 2014 06:54:36 -0500
+
+rmatrix (1.1-2-2-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 04 Mar 2014 09:00:43 -0600
+
+rmatrix (1.1-2-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 28 Jan 2014 19:56:35 -0600
+
+rmatrix (1.1-1.1-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 30 Dec 2013 20:23:22 -0600
+
+rmatrix (1.1-1-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 29 Dec 2013 09:52:08 -0600
+
+rmatrix (1.1-0-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version
+
+  * debian/control: Set Standards-Version: to current version 
+  
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 28 Oct 2013 16:01:34 -0500
+
+rmatrix (1.0-14-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 13 Sep 2013 07:29:12 -0500
+
+rmatrix (1.0-13-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 11 Sep 2013 06:40:32 -0500
+
+rmatrix (1.0-12-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 26 Mar 2013 14:33:54 -0500
+
+rmatrix (1.0-11-2) unstable; urgency=low
+
+  * debian/control: Set Build-Depends: to current R version 
+  
+  * (Re-)building with R 3.0.0 (beta)
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 26 Mar 2013 06:26:50 -0500
+
+rmatrix (1.0-11-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 08 Feb 2013 13:42:19 -0600
+
+rmatrix (1.0-10-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set Standards-Version: to current version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 23 Oct 2012 06:40:45 -0500
+
+rmatrix (1.0-9-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 05 Sep 2012 15:35:36 -0500
+
+rmatrix (1.0-7-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 17 Jun 2012 08:58:02 -0500
+
+rmatrix (1.0-6-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set Build-Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 01 Apr 2012 16:36:57 -0500
+
+rmatrix (1.0-5-1) unstable; urgency=low
+
+  * New upstream release
+  
+  * debian/control: Set Build-Depends: to current R version
+  * debian/control: Change Depends to ${R:Depends}
+  * debian/control: Set Standards-Version: to current version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 15 Mar 2012 19:32:32 -0500
+
+rmatrix (1.0-4-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 22 Feb 2012 08:22:05 -0600
+
+rmatrix (1.0-3-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 14 Jan 2012 11:21:08 -0600
+
+rmatrix (1.0-2-1) unstable; urgency=low
+
+  * New upstream release
+  
+  * debian/control: Set (Build-)Depends: to current R version
+  * debian/control: Set Standards-Version: to current version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 20 Nov 2011 13:54:50 -0600
+
+rmatrix (1.0-1-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version
+  
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 18 Oct 2011 14:19:48 -0500
+
+rmatrix (1.0-0-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 04 Oct 2011 13:13:30 -0500
+
+rmatrix (0.9996875-3-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 13 Aug 2011 13:27:22 -0500
+
+rmatrix (0.9996875-2-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 10 Aug 2011 11:31:39 -0500
+
+rmatrix (0.9996875-1-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 09 Aug 2011 07:22:17 -0500
+
+rmatrix (0.999375-50-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 09 Apr 2011 10:35:01 -0500
+
+rmatrix (0.999375-49-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 01 Apr 2011 22:19:54 -0500
+
+rmatrix (0.999375-48-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 18 Mar 2011 08:27:20 -0500
+
+rmatrix (0.999375-47-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 24 Feb 2011 10:04:58 -0600
+
+rmatrix (0.999375-46-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 15 Dec 2010 08:48:04 -0600
+
+rmatrix (0.999375-45-1) unstable; urgency=low
+
+  * New upstream release
+  
+  * debian/control: Set (Build-)Depends: to current R version
+  * debian/control: Set Standards-Version: to current version 
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 11 Nov 2010 10:58:50 -0600
+
+rmatrix (0.999375-44-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 13 Sep 2010 14:40:11 -0500
+
+rmatrix (0.999375-43-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set Standards-Version: to current version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 05 Aug 2010 18:39:00 -0500
+
+rmatrix (0.999375-42-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 15 Jul 2010 21:27:44 -0500
+
+rmatrix (0.999375-41-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 03 Jul 2010 15:57:51 -0500
+
+rmatrix (0.999375-40-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 04 Jun 2010 14:54:21 -0500
+
+rmatrix (0.999375-39-1) unstable; urgency=low
+
+  * New upstream release
+  
+  * debian/control: Set (Build-)Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 20 May 2010 04:01:17 -0500
+
+rmatrix (0.999375-38-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 03 Apr 2010 08:20:19 -0500
+
+rmatrix (0.999375-37-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 05 Feb 2010 14:54:25 -0600
+
+rmatrix (0.999375-35-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version
+  * debian/control: Set Standards-Version: to current version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 03 Feb 2010 16:48:21 -0600
+
+rmatrix (0.999375-33-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Removed Doug from uploaders. Thanks for all the work!
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 11 Dec 2009 16:14:52 -0600
+
+rmatrix (0.999375-32-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 23 Nov 2009 06:07:54 -0600
+
+rmatrix (0.999375-31-2) unstable; urgency=low
+
+  * Rebuilt for R 2.10.0 to work with new R-internal help file conversion
+
+  * debian/control: Set (Build-)Depends: to current R version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 03 Nov 2009 13:05:03 -0600
+
+rmatrix (0.999375-31-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version
+  * debian/control: Set Standards-Version: to current version
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 08 Oct 2009 17:19:52 -0500
+
+rmatrix (0.999375-30-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version
+  * debian/control: Set Standards-Version: to current version 3.8.2
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 30 Jul 2009 16:24:34 -0500
+
+rmatrix (0.999375-29-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 11 Jun 2009 19:51:58 -0500
+
+rmatrix (0.999375-28-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 09 Jun 2009 16:21:35 -0500
+
+rmatrix (0.999375-27-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 28 May 2009 21:08:19 -0500
+
+rmatrix (0.999375-26-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 29 Apr 2009 17:01:48 -0500
+
+rmatrix (0.999375-25-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 19 Apr 2009 15:51:50 -0500
+
+rmatrix (0.999375-23-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Changed Section: to new section 'gnu-r'
+  
+  * debian/control: Set (Build-)Depends: to current R version
+  * debian/control: Set Standards-Version: to current version 3.8.1
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 31 Mar 2009 15:38:40 -0500
+
+rmatrix (0.999375-22-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 13 Mar 2009 07:40:51 -0500
+
+rmatrix (0.999375-21-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 15 Feb 2009 09:13:27 -0600
+
+rmatrix (0.999375-20-2) unstable; urgency=low
+
+  * Rebuilt under R 2.8.1 			(Closes: #513990)
+    Thanks to Ben Goodrich for catching this.
+  
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 02 Feb 2009 20:38:59 -0600
+
+rmatrix (0.999375-20-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 01 Feb 2009 10:39:18 -0600
+
+rmatrix (0.999375-19-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 30 Jan 2009 18:59:58 -0600
+
+rmatrix (0.999375-18-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version 2.8.1
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 20 Jan 2009 07:10:04 -0600
+
+rmatrix (0.999375-17-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version 2.8.0
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 14 Dec 2008 08:56:59 -0600
+
+rmatrix (0.999375-16-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 19 Oct 2008 18:08:29 -0500
+
+rmatrix (0.999375-15-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 30 Sep 2008 19:34:51 -0500
+
+rmatrix (0.999375-14-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 16 Sep 2008 08:43:14 -0500
+
+rmatrix (0.999375-13-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version 2.7.2
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 31 Aug 2008 11:00:31 -0500
+
+rmatrix (0.999375-11-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 28 Jul 2008 13:43:06 -0500
+
+rmatrix (0.999375-10-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version 2.7.1
+  * debian/control: Set Standards-Version: to current version 3.8.0
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 26 Jun 2008 21:41:33 -0500
+
+rmatrix (0.999375-9-2) unstable; urgency=low
+
+  * Rebuilding under the current R version
+  * debian/control: Updated (Build-)Depends accordingly
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 10 Apr 2008 16:40:38 -0500
+
+rmatrix (0.999375-9-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 30 Mar 2008 21:22:18 -0500
+
+rmatrix (0.999375-8-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 30 Mar 2008 14:18:41 -0500
+
+rmatrix (0.999375-6-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 21 Mar 2008 21:03:42 -0500
+
+rmatrix (0.999375-5-1) unstable; urgency=low
+
+  * New upstream release
+  
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 08 Mar 2008 16:38:22 -0600
+
+rmatrix (0.999375-4-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Set (Build-)Depends: to current R version
+  * debian/control: Set Standards-Version: to current version 3.7.3
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 13 Jan 2008 20:20:33 -0600
+
+rmatrix (0.999375-3-1) unstable; urgency=low
+
+  * New upstream release
+  * Built with R 2.6.0, so setting (Build-)Depends: to 
+    'r-base-(core|dev) >> 2.5.1' to prevent move to testing before R 2.6.0
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 07 Oct 2007 20:33:25 -0500
+
+rmatrix (0.999375-2-2) unstable; urgency=low
+
+  * src/Makefile: Set SHLIB_EXT=.so so that Matrix.so gets removed; also
+    reported upstream					(Closes: #442722)
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 18 Sep 2007 16:21:48 -0500
+
+rmatrix (0.999375-2-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 25 Aug 2007 14:27:19 -0500
+
+rmatrix (0.999375-1-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 03 Aug 2007 16:53:06 -0500
+
+rmatrix (0.999375-0-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/control: (Build-)Depends: updated to r-base-(dev|core) (>= 2.5.1)
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat, 07 Jul 2007 21:18:34 -0500
+
+rmatrix (0.99875-2-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 11 Jun 2007 20:35:59 -0500
+
+rmatrix (0.99875-1-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 15 May 2007 18:10:07 -0500
+
+rmatrix (0.99875-0-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/changelog: (Build-)Depends: updated to 'r-base-core (>= 2.5.0)'
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 14 May 2007 21:17:09 -0500
+
+rmatrix (0.9975-11-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 19 Feb 2007 21:08:45 -0600
+
+rmatrix (0.9975-10-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 11 Feb 2007 09:19:14 -0600
+
+rmatrix (0.9975-9-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat,  3 Feb 2007 18:10:39 -0600
+
+rmatrix (0.9975-8-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/changelog: (Build-)Depends: updated to 'r-base-core (>= 2.4.1)'
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon,  1 Jan 2007 14:19:03 -0600
+
+rmatrix (0.9975-7-1) unstable; urgency=low
+
+  * New upstream release
+  * Upload intended for unstable only as etch is frozen
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 19 Dec 2006 19:55:35 -0600
+
+rmatrix (0.9975-6-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/changelog: (Build-)Depends: now r-base-core (>= 2.4.0)
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu,  9 Nov 2006 17:59:31 -0600
+
+rmatrix (0.9975-5-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 24 Oct 2006 21:08:16 -0500
+
+rmatrix (0.9975-3-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun,  8 Oct 2006 20:47:29 -0500
+
+rmatrix (0.9975-2-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat,  7 Oct 2006 09:23:13 -0500
+
+rmatrix (0.9975-0-1) unstable; urgency=low
+
+  * New upstream release for the upcoming R 2.4.0, built using the 
+    R 2.4.0 releases candidate 
+
+  * debian/control: Upgraded Build-Depends: to 'r-base-dev (>> 2.3.1)' 
+    and Depends: to 'r-base-core (>> 2.3.1)' accordingly
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 20 Sep 2006 22:19:54 -0500
+
+rmatrix (0.995.19-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon, 18 Sep 2006 20:53:25 -0500
+
+rmatrix (0.995.18-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 14 Sep 2006 17:19:45 -0500
+
+rmatrix (0.995.16-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun,  3 Sep 2006 09:30:28 -0500
+
+rmatrix (0.995.15-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 29 Aug 2006 21:09:00 -0500
+
+rmatrix (0.995.14-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Mon,  7 Aug 2006 11:33:25 -0500
+
+rmatrix (0.995.13-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri,  4 Aug 2006 18:05:14 -0500
+
+rmatrix (0.995.12-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 19 Jul 2006 21:48:47 -0500
+
+rmatrix (0.995.11-1) unstable; urgency=low
+
+  * New upstream release
+
+  * debian/control: Standards-Version: increased to 3.7.2, no changes needed
+  
+ -- Dirk Eddelbuettel <edd@debian.org>  Tue, 13 Jun 2006 08:52:48 -0500
+
+rmatrix (0.995.10-1) unstable; urgency=low
+
+  * New upstream release
+  
+  * debian/rules: Simplified to cdbs-based one-liner sourcing r-cran.mk 
+  * debian/control: Hence Build-Depends: updated to r-base-dev (>= 2.3.0)
+  
+  * debian/control: Standards-Version: increased to 3.7.0, no changes needed
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 12 May 2006 19:11:04 -0500
+
+rmatrix (0.995.8-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Wed, 22 Mar 2006 16:12:22 -0600
+
+rmatrix (0.995.7-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/control: Reordered Doug and myself as maintainers/uploaders
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Fri, 17 Mar 2006 20:10:52 -0600
+
+rmatrix (0.995.6-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/control: Added myself to Uploaders:
+  * debian/watch: Updated version and added uversionmangle option
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Thu, 16 Mar 2006 17:45:05 -0600
+
+rmatrix (0.995.5-1) unstable; urgency=low
+
+  * NMU
+  * New upstream release
+  * debian/rules: Standardized to be aligned with other R packages
+						 (Closes: #350248)
+  * debian/control: Added r-cran-coda, r-cran-vr to Build-Depends:
+  
+ -- Dirk Eddelbuettel <edd@debian.org>  Sun, 12 Feb 2006 17:56:32 -0600
+
+rmatrix (0.995.4-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/post{inst,rm}: No longer need to call /usr/bin/R for html index
+  * debian/rules: Updated with respect to build arch.
+  * debian/rules: Do not run 'R CMD check' on all architectures
+  * debian/post{inst,rm}: Call /usr/bin/R with explicit path (thanks, Kurt Hornik)
+  * debian/control: Upgraded Standards-Version: to 3.6.2.1
+  * debian/watch: Corrected regular expression with (thanks, Rafael Laboissier)
+
+ -- Douglas Bates <bates@stat.wisc.edu>  Thu, 26 Jan 2006 16:08:14 -0600
+
+rmatrix (0.95.10-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Douglas Bates <bates@stat.wisc.edu>  Fri, 20 May 2005 09:05:08 -0500
+
+rmatrix (0.95.7-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Douglas Bates <bates@stat.wisc.edu>  Wed, 20 Apr 2005 08:38:38 -0500
+
+rmatrix (0.95.5-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Douglas Bates <bates@stat.wisc.edu>  Fri,  1 Apr 2005 07:49:15 -0600
+
+rmatrix (0.8.21-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Douglas Bates <bates@stat.wisc.edu>  Sun, 19 Dec 2004 07:40:28 -0600
+
+rmatrix (0.8.19-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Douglas Bates <bates@stat.wisc.edu>  Wed, 15 Dec 2004 07:13:56 -0600
+
+rmatrix (0.8.17-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/control: Require r-base-dev (>= 2.0.1) in Build-Depends. Closes: Bug#282366
+  * debian/control: Change Description to remove references to TAUCS.
+
+ -- Douglas Bates <bates@stat.wisc.edu>  Mon, 22 Nov 2004 08:54:58 -0600
+
+rmatrix (0.8.15-1) unstable; urgency=low
+
+  * New upstream release upload coordinated with upstream author and 
+    Debian maintainer Doug Bates as part of getting R 2.0.0 into Debian
+  * Rebuilt under R 2.0.0
+  * debian/control: Updated Build-Depends: and Depends: accordingly
+  * debian/control: Added r-cran-lattice to Build-Depends:
+  * debian/control: Removed full stop on Description: line [lintian]
+  * debian/post{inst,rm}: Call build-help.pl to update package.html list
+  * debian/watch: Added watch file
+
+ -- Dirk Eddelbuettel <edd@debian.org>  Sat,  9 Oct 2004 21:21:13 -0500
+
+rmatrix (0.8.12-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Douglas Bates <bates@stat.wisc.edu>  Sat, 11 Sep 2004 08:40:26 -0500
+
+rmatrix (0.8.7-1) unstable; urgency=low
+
+  * Initial Debian Release
+  * Closes: Bug#252310
+
+ -- Douglas Bates <bates@stat.wisc.edu>  Wed,  2 Jun 2004 12:57:16 -0500
