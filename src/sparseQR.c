@@ -1,27 +1,5 @@
 #include "sparseQR.h"
 
-SEXP sparseQR_validate(SEXP x)
-{
-    CSP V = AS_CSP__(GET_SLOT(x, Matrix_VSym)),
-	R = AS_CSP__(GET_SLOT(x, Matrix_RSym));
-    SEXP beta = GET_SLOT(x, Matrix_betaSym),
-	p = GET_SLOT(x, Matrix_pSym),
-	q = GET_SLOT(x, install("q"));
-    R_CheckStack();
-
-    if (LENGTH(p) != V->m)
-	return mkString(_("length(p) must match nrow(V)"));
-    if (LENGTH(beta) != V->n)
-	return mkString(_("length(beta) must match ncol(V)"));
-    int	lq = LENGTH(q);
-    if (lq && lq != R->n)
-	return mkString(_("length(q) must be zero or ncol(R)"));
-    if (V->n != R->n)
-	return mkString("ncol(V) != ncol(R)");
-    /* FIXME: Check that the permutations are permutations */
-    return ScalarLogical(1);
-}
-
 /**
  * Apply Householder transformations and the row permutation P to y
  *
@@ -42,13 +20,14 @@ void sparseQR_Qmult(cs *V, SEXP dmns, double *beta, int *p, int trans,
     /* y: contents of a V->m by nrhs, i.e. dim(y) == ydims[0:1], dense matrix
      * -- Note that V->m = m2 : V may contain "spurious 0 rows" (structural rank deficiency) */
     int m = V->m, n = V->n;
+    size_t m_ = m;
     if (ydims[0] != m)
 	error(_("sparseQR_Qmult(): nrow(y) = %d != %d = nrow(V)"), ydims[0], m);
     double *x; // workspace
-    C_or_Alloca_TO(x, m, double);
+    Calloc_or_Alloca_TO(x, m, double);
     if (trans) {
 	for (int j = 0; j < ydims[1]; j++) {
-	    double *yj = y + j * m;
+	    double *yj = y + j * m_;
 	    cs_pvec(p, yj, x, m);	/* x(0:m-1) = y(p(0:m-1), j) */
 	    Memcpy(yj, x, m);	/* replace it */
 	    for (int k = 0 ; k < n ; k++)   /* apply H[1]...H[n] */
@@ -56,14 +35,14 @@ void sparseQR_Qmult(cs *V, SEXP dmns, double *beta, int *p, int trans,
 	}
     } else {
 	for (int j = 0; j < ydims[1]; j++) {
-	    double *yj = y + j * m;
+	    double *yj = y + j * m_;
 	    for (int k = n - 1 ; k >= 0 ; k--) /* apply H[n]...H[1] */
 		cs_happly(V, k, beta[k], yj);
 	    cs_ipvec(p, yj, x, m); /* inverse permutation */
 	    Memcpy(yj, x, m);
 	}
     }
-    if(m >= SMALL_4_Alloca) Free(x);
+    Free_FROM(x, m);
     if(!isNull(dmns)) { // assign rownames to 'ans' matrix
 	// FIXME? colnames taken from 'y' ?!
 	if(!isNull(VECTOR_ELT(dmns, 0))) {
@@ -94,7 +73,7 @@ SEXP sparseQR_qty(SEXP qr, SEXP y, SEXP trans, SEXP keep_dimnames)
     SEXP ans, aa, dmns = R_NilValue;					\
     if(_DM_NMS_) dmns = GET_SLOT(V_, Matrix_DimNamesSym);		\
     PROTECT_INDEX ipx;                                                  \
-    PROTECT_WITH_INDEX(ans = dup_mMatrix_as_dgeMatrix(y), &ipx);	\
+    PROTECT_WITH_INDEX(ans = dense_as_general(y, 'd', 2, 0), &ipx); \
     int *ydims = INTEGER(GET_SLOT(ans, Matrix_DimSym)),			\
 	m = ydims[0], n = ydims[1], M = V->m, *d_a;			\
     Rboolean rank_def = (m < M);					\
@@ -103,13 +82,13 @@ SEXP sparseQR_qty(SEXP qr, SEXP y, SEXP trans, SEXP keep_dimnames)
 	d_a = INTEGER(GET_SLOT(aa, Matrix_DimSym)); d_a[0] = M; d_a[1] = n; \
 	SEXP dn = GET_SLOT(aa, Matrix_DimNamesSym);			\
 	SET_VECTOR_ELT(dn, 1,						\
-		       duplicate(VECTOR_ELT(GET_SLOT(ans, Matrix_DimNamesSym), 1))); \
+		       duplicate(VECTOR_ELT(GET_SLOT(ans, Matrix_DimNamesSym), 1)));	\
 	SET_SLOT(aa, Matrix_DimNamesSym, dn);				\
 	double *yy = REAL( GET_SLOT(ans, Matrix_xSym));     /* m * n */	\
-	double *xx = REAL(ALLOC_SLOT(aa, Matrix_xSym, REALSXP, M * n));	\
+	double *xx = REAL(ALLOC_SLOT(aa, Matrix_xSym, REALSXP, M * (R_xlen_t) n));	\
 	for(int j = 0; j < n; j++) { /* j-th column */			\
 	    Memcpy(xx + j*M, yy + j*m, m); /* copy          x[   1:m , j ] := yy[,j] */	\
-	    for(int i = m; i < M; i++) xx[i + j*M] = 0.;/*  x[(m+1):M, j ] := 0	*/ \
+	    for(int i = m; i < M; i++) xx[i + j*M] = 0.;/*  x[(m+1):M, j ] := 0	*/	\
 	}								\
 	REPROTECT(ans = duplicate(aa), ipx); /* is  M x n  now */	\
     }
@@ -124,7 +103,7 @@ SEXP sparseQR_qty(SEXP qr, SEXP y, SEXP trans, SEXP keep_dimnames)
     /* remove the extra rows from ans */				\
 	d_a[0] = m;/* -> @Dim is ok;  @Dimnames (i.e. colnames) still are */ \
 	double *yy = REAL( GET_SLOT(ans, Matrix_xSym)); /* is  M  x n */ \
-	double *xx = REAL(ALLOC_SLOT(aa, Matrix_xSym, REALSXP, m * n));	\
+	double *xx = REAL(ALLOC_SLOT(aa, Matrix_xSym, REALSXP, m * (R_xlen_t) n)); \
 	for(int j = 0; j < n; j++) { /*  j-th column */			\
 	    Memcpy(xx + j*m, yy + j*M, m); /* copy    x[ 1:m, j ] := yy[,j] */ \
 	}								\
@@ -145,7 +124,7 @@ SEXP sparseQR_qty(SEXP qr, SEXP y, SEXP trans, SEXP keep_dimnames)
 // Compute  qr.coef(qr, y)  :=  R^{-1} Q' y   {modulo row and column permutations}
 SEXP sparseQR_coef(SEXP qr, SEXP y)
 {
-    SEXP qslot = GET_SLOT(qr, install("q")), R_ = GET_SLOT(qr, Matrix_RSym);
+    SEXP qslot = GET_SLOT(qr, Matrix_qSym), R_ = GET_SLOT(qr, Matrix_RSym);
     CSP	R = AS_CSP__(R_);
     // FIXME: check  n_R, M (= R->m)   vs  n, m
     int *q = INTEGER(qslot), lq = LENGTH(qslot), n_R = R->n; // = ncol(R)
@@ -162,7 +141,7 @@ SEXP sparseQR_coef(SEXP qr, SEXP y)
 
     // rownames(ans) := colnames(ans)
     SET_VECTOR_ELT(dmns, 0, VECTOR_ELT(dmns, 1));
-
+    
     /* apply row permutation and multiply by Q' */
     sparseQR_Qmult(V, dmns, REAL(GET_SLOT(qr, Matrix_betaSym)),
 		   INTEGER(GET_SLOT(qr, Matrix_pSym)), /* trans = */ TRUE,
@@ -171,7 +150,7 @@ SEXP sparseQR_coef(SEXP qr, SEXP y)
 
     double *ax = REAL(GET_SLOT(ans, Matrix_xSym)),
 	*x = (double*) NULL;
-    if(lq) { C_or_Alloca_TO(x, M, double); }
+    if (lq) Calloc_or_Alloca_TO(x, M, double);
     for (int j = 0; j < n; j++) {
 	double *aj = ax + j * M;
 	cs_usolve(R, aj);
@@ -180,7 +159,7 @@ SEXP sparseQR_coef(SEXP qr, SEXP y)
 	    Memcpy(aj, x, n_R);
 	}
     }
-    if(lq && M >= SMALL_4_Alloca) Free(x);
+    if (lq) Free_FROM(x, M);
 
     if(rank_def) {
 	warning(_("%s(): structurally rank deficient case: possibly WRONG zeros"),

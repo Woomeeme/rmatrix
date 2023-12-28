@@ -1,218 +1,192 @@
-#### All methods for "diagonalMatrix" and its subclasses,
-####  currently "ddiMatrix", "ldiMatrix"
+## Methods for "diagonalMatrix" and its subclasses, currently "[dl]diMatrix"
 
-## Purpose: Constructor of diagonal matrices -- ~= diag() ,
-##          but *not* diag() extractor!
-Diagonal <- function(n, x = NULL)
-{
-    ## Allow  Diagonal(4), Diagonal(x=1:5), and  Diagonal(4, TRUE)
-    n <- if(missing(n)) length(x) else {
-	stopifnot(length(n) == 1, n == as.integer(n), n >= 0)
-	as.integer(n)
-    }
+## ~~~~ COERCIONS TO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    if(missing(x)) ## unit diagonal matrix
-	new("ddiMatrix", Dim = c(n,n), diag = "U")
-    else {
-	lx <- length(x)
-	lx.1 <- lx == 1L
-	stopifnot(lx.1 || lx == n) # but keep 'x' short for now
-	if(is.logical(x))
-	    cl <- "ldiMatrix"
-	else if(is.numeric(x)) {
-	    cl <- "ddiMatrix"
-	    x <- as.numeric(x)
-	}
-	else if(is.complex(x)) {
-	    cl <- "zdiMatrix"  # will not yet work
-	} else stop("'x' has invalid data type")
-	if(lx.1 && !is.na(x) && x == 1) # cheap check for uni-diagonal..
-	    new(cl, Dim = c(n,n), diag = "U")
-	else
-	    new(cl, Dim = c(n,n), diag = "N",
-		x = if(lx.1) rep.int(x,n) else x)
-    }
+setAs("Matrix", "diagonalMatrix", ..M2diag)
+setAs("matrix", "diagonalMatrix", ..M2diag)
+
+## MJ: no longer needed ... replacement above
+if(FALSE) {
+setAs("matrix", "diagonalMatrix",
+      function(from) {
+	  d <- dim(from)
+	  if(d[1] != (n <- d[2])) stop("non-square matrix")
+	  if(any(from[row(from) != col(from)] != 0))
+	      stop("matrix with non-zero off-diagonals cannot be coerced to \"diagonalMatrix\"")
+	  x <- diag(from); names(x) <- NULL # don't want them in 'x' slot
+	  if(is.logical(x)) {
+	      cl <- "ldiMatrix"
+	      uni <- allTrue(x) ## uni := {is it unit-diagonal ?}
+	  } else {
+	      cl <- "ddiMatrix"
+	      uni <- allTrue(x == 1)
+	      storage.mode(x) <- "double"
+	  } ## TODO: complex
+	  new(cl, Dim = c(n,n), diag = if(uni) "U" else "N",
+	      x = if(uni) x[FALSE] else x, Dimnames = .M.DN(from))
+      })
+
+## ``generic'' coercion to  diagonalMatrix : build on  isDiagonal() and diag()
+setAs("Matrix", "diagonalMatrix",
+      function(from) {
+	  d <- dim(from)
+	  if(d[1] != (n <- d[2])) stop("non-square matrix")
+	  if(!isDiagonal(from)) stop("matrix is not diagonal")
+	  ## else:
+	  x <- diag(from); names(x) <- NULL # don't want them in 'x' slot
+	  if(is.logical(x)) {
+	      cl <- "ldiMatrix"
+	      uni <- allTrue(x)
+	  } else {
+	      cl <- "ddiMatrix"
+	      uni <- allTrue(x == 1)
+	      storage.mode(x) <- "double"
+	  } ## TODO: complex
+	  new(cl, Dim = c(n,n), diag = if(uni) "U" else "N",
+	      x = if(uni) x[FALSE] else x, Dimnames = from@Dimnames)
+      })
+} ## MJ
+
+
+## ~~~~ COERCIONS FROM ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+..diag2dsparse <- function(from)
+    .Call(R_diagonal_as_sparse, from, "dtT", "U", TRUE)
+..diag2lsparse <- function(from)
+    .Call(R_diagonal_as_sparse, from, "ltT", "U", TRUE)
+..diag2nsparse <- function(from)
+    .Call(R_diagonal_as_sparse, from, "ntT", "U", TRUE)
+
+..diag2tC <- function(from)
+    .Call(R_diagonal_as_sparse, from, ".tC", "U", TRUE)
+..diag2tR <- function(from)
+    .Call(R_diagonal_as_sparse, from, ".tR", "U", TRUE)
+..diag2tT <- function(from)
+    .Call(R_diagonal_as_sparse, from, ".tT", "U", TRUE)
+..diag2sC <- function(from)
+    .Call(R_diagonal_as_sparse, from, ".sC", "U", TRUE)
+..diag2sR <- function(from)
+    .Call(R_diagonal_as_sparse, from, ".sR", "U", TRUE)
+..diag2sT <- function(from)
+    .Call(R_diagonal_as_sparse, from, ".sT", "U", TRUE)
+..diag2gC <- function(from)
+    .Call(R_diagonal_as_sparse, from, ".gC", "U", TRUE)
+..diag2gR <- function(from)
+    .Call(R_diagonal_as_sparse, from, ".gR", "U", TRUE)
+..diag2gT <- function(from)
+    .Call(R_diagonal_as_sparse, from, ".gT", "U", TRUE)
+
+## .diag2[ts]T() are exported ...
+.diag2tT <- function(from, uplo = "U", kind = ".", drop0 = TRUE)
+    .Call(R_diagonal_as_sparse, from,
+          `substr<-`(".tT", 1L, 1L, kind), uplo, drop0)
+.diag2sT <- function(from, uplo = "U", kind = ".", drop0 = TRUE)
+    .Call(R_diagonal_as_sparse, from,
+          `substr<-`(".sT", 1L, 1L, kind), uplo, drop0)
+
+## For group methods
+.diag2tT.smart <- function(from, x, uplo = "U", kind = ".", drop0 = TRUE) {
+    .Call(R_diagonal_as_sparse, from,
+          `substr<-`(".sT", 1L, 1L, kind),
+          if(is(x, "triangularMatrix")) x@uplo else uplo,
+          drop0)
+}
+.diag2T.smart <- function(from, x, uplo = "U", kind = ".", drop0 = TRUE) {
+    symmetric <- extends(cld <- getClassDef(class(x)), "symmetricMatrix")
+    .Call(R_diagonal_as_sparse, from,
+          `substr<-`(if(symmetric) ".sT" else ".tT", 1L, 1L, kind),
+          if(symmetric || extends(cld, "triangularMatrix")) x@uplo else uplo,
+          drop0)
 }
 
-.sparseDiagonal <- function(n, x = 1, uplo = "U",
-			    shape = if(missing(cols)) "t" else "g",
-			    unitri, kind,
-			    cols = if(n) 0:(n - 1L) else integer(0))
-{
-    n <- if (missing(n)) length(x) else {
-	stopifnot(length(n) == 1, n == as.integer(n), n >= 0)
-	as.integer(n)
-    }
-    if(!(mcols <- missing(cols)))
-	stopifnot(0 <= (cols <- as.integer(cols)), cols < n)
-    m <- length(cols)
-    if(missing(kind))
-	kind <-
-	    if(is.double(x)) "d"
-	    else if(is.logical(x)) "l"
-	    else { ## for now
-		storage.mode(x) <- "double"
-		"d"
-	    }
-    else stopifnot(any(kind == c("d","l","n")))
-    stopifnot(is.character(shape), nchar(shape) == 1,
-	      any(shape == c("t","s","g"))) # triangular / symmetric / general
-    if((missing(unitri) || unitri) && shape == "t" &&
-       (mcols || cols == 0:(n-1L)) &&
-       ((any(kind == c("l", "n")) && allTrue(x)) ||
-	(    kind == "d"	  && allTrue(x == 1)))) { ## uni-triangular
-	new(paste0(kind,"tCMatrix"), Dim = c(n,n),
-		   uplo = uplo, diag = "U", p = rep.int(0L, n+1L))
-    }
-    else if(kind == "n") {
-	if(shape == "g")
-	    new("ngCMatrix", Dim = c(n,m), i = cols, p = 0:m)
-	else new(paste0("n", shape, "CMatrix"), Dim = c(n,m), uplo = uplo,
-		 i = cols, p = 0:m)
-    }
-    else { ## kind != "n" -- have x slot :
-	if((lx <- length(x)) == 1) x <- rep.int(x, m)
-	else if(lx != m) stop("length(x) must be either 1 or #{cols}")
-	if(shape == "g")
-	    new(paste0(kind, "gCMatrix"), Dim = c(n,m),
-		x = x, i = cols, p = 0:m)
-	else new(paste0(kind, shape, "CMatrix"), Dim = c(n,m), uplo = uplo,
-		 x = x, i = cols, p = 0:m)
-    }
+..diag2tp  <- function(from) .diag2dense(from, ".tp", "U")
+..diag2tr  <- function(from) .diag2dense(from, ".tr", "U")
+..diag2dtr <- function(from) .diag2dense(from, "dtr", "U")
+..diag2ltr <- function(from) .diag2dense(from, "ltr", "U")
+..diag2ntr <- function(from) .diag2dense(from, "ntr", "U")
+..diag2dsy <- function(from) .diag2dense(from, "dsy", "U")
+..diag2lsy <- function(from) .diag2dense(from, "lsy", "U")
+..diag2nsy <- function(from) .diag2dense(from, "nsy", "U")
+..diag2dge <- function(from) .diag2dense(from, "dge", NULL)
+..diag2lge <- function(from) .diag2dense(from, "lge", NULL)
+..diag2nge <- function(from) .diag2dense(from, "nge", NULL)
+
+setAs("diagonalMatrix",          "dMatrix", ..diag2d)
+setAs("diagonalMatrix",          "lMatrix", ..diag2l)
+setAs("diagonalMatrix",          "nMatrix", ..diag2nsparse)
+
+setAs("diagonalMatrix",    "dsparseMatrix", ..diag2dsparse)
+setAs("diagonalMatrix",    "lsparseMatrix", ..diag2lsparse)
+setAs("diagonalMatrix",    "nsparseMatrix", ..diag2nsparse)
+
+setAs("diagonalMatrix",    "CsparseMatrix", ..diag2tC)
+setAs("diagonalMatrix",    "RsparseMatrix", ..diag2tR)
+setAs("diagonalMatrix",    "TsparseMatrix", ..diag2tT)
+
+setAs("diagonalMatrix", "triangularMatrix", ..diag2tC)
+setAs("diagonalMatrix",  "symmetricMatrix", ..diag2sC)
+setAs("diagonalMatrix",    "generalMatrix", ..diag2gC)
+
+setAs("diagonalMatrix",      "denseMatrix", ..diag2tr)
+setAs("diagonalMatrix",   "unpackedMatrix", ..diag2tr)
+setAs("diagonalMatrix",     "packedMatrix", ..diag2tp)
+setAs("diagonalMatrix",     "ddenseMatrix", ..diag2dtr)
+setAs("diagonalMatrix",     "ldenseMatrix", ..diag2ltr)
+setAs("diagonalMatrix",     "ndenseMatrix", ..diag2ntr)
+setAs("diagonalMatrix",           "matrix", .diag2m)
+setAs("diagonalMatrix",           "vector", .diag2v)
+
+setMethod("as.vector", signature(x = "diagonalMatrix"),
+          function(x, mode) as.vector(.diag2v(x), mode))
+
+setMethod("as.numeric", signature(x = "diagonalMatrix"),
+          function(x, ...) as.double(.diag2v(x)))
+setMethod("as.numeric", signature(x = "ddiMatrix"),
+          function(x, ...) .diag2v(x))
+
+setMethod("as.logical", signature(x = "diagonalMatrix"),
+          function(x, ...) as.logical(.diag2v(x)))
+setMethod("as.logical", signature(x = "ldiMatrix"),
+          function(x, ...) .diag2v(x))
+
+## DEPRECATED IN 1.5-0; see ./zzz.R
+if(FALSE) {
+.kinds <- c("d", "l")
+for (.kind in .kinds) {
+    ## ddi->[^d]di and similar
+    for (.otherkind in .kinds[.kinds != .kind])
+        setAs(paste0(     .kind, "diMatrix"),
+              paste0(.otherkind, "diMatrix"),
+              get(paste0("..diag2", .otherkind),
+                  mode = "function", inherits = FALSE))
+    ## ddi->d[tsg][CRT] and similar
+    for (.x in c("t", "s", "g"))
+        for (.y in c("C", "R", "T"))
+            setAs(paste0(.kind, "diMatrix"),
+                  paste0(.kind, .x, .y, "Matrix"),
+                  get(paste0("..diag2", .x, .y),
+                      mode = "function", inherits = FALSE))
+    ## ddi->d(tr|sy|ge) and similar
+    for (.xy in c("tr", "sy", "ge"))
+        setAs(paste0(.kind, "diMatrix"),
+              paste0(.kind, .xy, "Matrix"),
+              get(paste0("..diag2", .kind, .xy),
+                  mode = "function", inherits = FALSE))
 }
+rm(.kinds, .kind, .otherkind, .x, .y, .xy)
+} ## DEPRECATED IN 1.5-0; see ./zzz.R
 
-## Pkg 'spdep' had (relatively slow) versions of this as_dsCMatrix_I()
-.symDiagonal <- function(n, x = rep.int(1,n), uplo = "U", kind)
-    .sparseDiagonal(n, x, uplo, shape = "s", kind = kind)
+rm(..diag2dsparse, ..diag2lsparse, ..diag2nsparse,
+   ..diag2tC, ..diag2tR, ..diag2tT,
+   ..diag2sC, ..diag2sR, ..diag2sT,
+   ..diag2gC, ..diag2gR, ..diag2gT,
+   ..diag2tp, ..diag2tr,
+   ..diag2dtr, ..diag2ltr, ..diag2ntr,
+   ..diag2dsy, ..diag2lsy, ..diag2nsy,
+   ..diag2dge, ..diag2lge, ..diag2nge)
 
-## NOTA BENE: .triDiagonal() would be misleading (<=> banded tri-diagonal matrix !)
-# instead of   diagU2N(as(Diagonal(n), "CsparseMatrix")), diag = "N" in any case:
-.trDiagonal <- function(n, x = 1, uplo = "U", unitri = TRUE, kind)
-    .sparseDiagonal(n, x, uplo, shape = "t", unitri=unitri, kind=kind)
-
-
-## This is modified from a post of Bert Gunter to R-help on  1 Sep 2005.
-## Bert's code built on a post by Andy Liaw who most probably was influenced
-## by earlier posts, notably one by Scott Chasalow on S-news, 16 Jan 2002
-## who posted his bdiag() function written in December 1995.
-if(FALSE)##--- no longer used:
-.bdiag <- function(lst) {
-    ## block-diagonal matrix [a dgTMatrix] from list of matrices
-    stopifnot(is.list(lst), length(lst) >= 1)
-    dims <- vapply(lst, dim, 1L, USE.NAMES=FALSE)
-    ## make sure we had all matrices:
-    if(!(is.matrix(dims) && nrow(dims) == 2))
-	stop("some arguments are not matrices")
-    csdim <- rbind(rep.int(0L, 2),
-                   apply(dims, 1, cumsum))
-    r <- new("dgTMatrix")
-    r@Dim <- as.integer(csdim[nrow(csdim),])
-    add1 <- matrix(1:0, 2,2)
-    for(i in seq_along(lst)) {
-	indx <- apply(csdim[i:(i+1),] + add1, 2, function(n) n[1]:n[2])
-	if(is.null(dim(indx))) ## non-square matrix
-	    r[indx[[1]],indx[[2]]] <- lst[[i]]
-	else ## square matrix
-	    r[indx[,1], indx[,2]] <- lst[[i]]
-    }
-    r
-}
-## expand(<mer>) needed something like bdiag() for lower-triangular
-## (Tsparse) Matrices; hence Doug Bates provided a much more efficient
-##  implementation for those; now extended and generalized:
-.bdiag <- function(lst) {
-    ## block-diagonal matrix [a dgTMatrix] from list of matrices
-    stopifnot(is.list(lst), (nl <- length(lst)) >= 1)
-
-### FIXME: next line is *slow* when lst = list of 75'000  dense 3x3 matrices
-    Tlst <- lapply(lapply(lst, as_Csp2), # includes "diagU2N"
-		   as, "TsparseMatrix")
-    if(nl == 1) return(Tlst[[1]])
-    ## else
-    i_off <- c(0L, cumsum(vapply(Tlst, nrow, 1L)))
-    j_off <- c(0L, cumsum(vapply(Tlst, ncol, 1L)))
-
-    clss <- vapply(Tlst, class, "")
-    ## NB ("FIXME"): this requires the component classes to be *called*
-    ## -- "dgTMatrix" | "dnTMatrix" etc (and not just *extend* those)!
-    typ <- substr(clss, 2, 2)
-    knd <- substr(clss, 1, 1)
-    sym <- typ == "s" # symmetric ones
-    tri <- typ == "t" # triangular ones
-    use.n <- any(is.n <- knd == "n")
-    if(use.n && !(use.n <- all(is.n))) {
-	Tlst[is.n] <- lapply(Tlst[is.n], as, "lMatrix")
-	knd [is.n] <- "l"
-    }
-    use.l <- !use.n && all(knd == "l")
-    if(all(sym)) { ## result should be *symmetric*
-	uplos <- vapply(Tlst, slot, ".", "uplo") ## either "U" or "L"
-	tLU <- table(uplos)# of length 1 or 2 ..
-	if(length(tLU) == 1) { ## all "U" or all "L"
-	    useU <- uplos[1] == "U"
-	} else { ## length(tLU) == 2, counting "L" and "U"
-	    useU <- diff(tLU) >= 0
-	    if(useU && (hasL <- tLU[1] > 0))
-		Tlst[hasL] <- lapply(Tlst[hasL], t)
-	    else if(!useU && (hasU <- tLU[2] > 0))
-		Tlst[hasU] <- lapply(Tlst[hasU], t)
-	}
-	if(use.n) { ## return nsparseMatrix :
-	    r <- new("nsTMatrix")
-	} else {
-	    r <- new(paste0(if(use.l) "l" else "d", "sTMatrix"))
-	    r@x <- unlist(lapply(Tlst, slot, "x"))
-	}
-	r@uplo <- if(useU) "U" else "L"
-    }
-    else if(all(tri) && { ULs <- vapply(Tlst, slot, ".", "uplo")##  "U" or "L"
-			  all(ULs[1L] == ULs[-1L]) } ## all upper or all lower
-       ){ ## *triangular* result
-
-	if(use.n) { ## return nsparseMatrix :
-	    r <- new("ntTMatrix")
-	} else {
-	    r <- new(paste0(if(use.l) "l" else "d", "tTMatrix"))
-	    r@x <- unlist(lapply(Tlst, slot, "x"))
-	}
-	r@uplo <- ULs[1L]
-    }
-    else {
-	if(any(sym))
-	    Tlst[sym] <- lapply(Tlst[sym], as, "generalMatrix")
-	if(use.n) { ## return nsparseMatrix :
-	    r <- new("ngTMatrix")
-	} else {
-	    r <- new(paste0(if(use.l) "l" else "d", "gTMatrix"))
-	    r@x <- unlist(lapply(Tlst, slot, "x"))
-	}
-    }
-    r@Dim <- c(i_off[nl+1], j_off[nl + 1])
-    r@i <- unlist(lapply(1:nl, function(k) Tlst[[k]]@i + i_off[k]))
-    r@j <- unlist(lapply(1:nl, function(k) Tlst[[k]]@j + j_off[k]))
-    r
-}
-
-bdiag <- function(...) {
-    if((nA <- nargs()) == 0) return(new("dgCMatrix"))
-    if(nA == 1 && !is.list(...))
-	return(as(..., "CsparseMatrix"))
-    alis <- if(nA == 1 && is.list(..1)) ..1 else list(...)
-    if(length(alis) == 1)
-	return(as(alis[[1]], "CsparseMatrix"))
-
-    ## else : two or more arguments
-    as(.bdiag(alis), "CsparseMatrix")
-}
-
-setMethod("tril", "diagonalMatrix", function(x, k = 0, ...)
-    if(k >= 0) x else .setZero(x, paste0(.M.kind(x), "tCMatrix")))
-
-setMethod("triu", "diagonalMatrix", function(x, k = 0, ...)
-    if(k <= 0) x else  .setZero(x, paste0(.M.kind(x), "tCMatrix")))
-
-
-
+## MJ: no longer needed ... replacement above
+if(FALSE) {
 .diag2tT <- function(from, uplo = "U", kind = .M.kind(from), drop0 = TRUE) {
     ## to triangular Tsparse
     x <- from@x
@@ -263,12 +237,6 @@ diag2Tsmart <- function(d, x, kind = .M.kind(d)) {
 	.diag2tT(d, uplo = if(extends(clx,"triangularMatrix")) x@uplo else "U", kind)
 }
 
-## FIXME: should not be needed {when ddi* is dsparse* etc}:
-setMethod("is.finite", signature(x = "diagonalMatrix"),
-	  function(x) is.finite(.diag2tT(x)))
-setMethod("is.infinite", signature(x = "diagonalMatrix"),
-	  function(x) is.infinite(.diag2tT(x)))
-
 ## In order to evade method dispatch ambiguity warnings,
 ## and because we can save a .M.kind() call, we use this explicit
 ## "hack"  instead of signature  x = "diagonalMatrix" :
@@ -306,7 +274,6 @@ setAs("diagonalMatrix", "nMatrix",
 	  new("ntTMatrix", i = i, j = i, diag = from@diag,
 	      Dim = from@Dim, Dimnames = from@Dimnames)
       })
-
 setAs("diagonalMatrix", "nsparseMatrix", function(from) as(from, "nMatrix"))
 
 ##' A version of diag(x,n) which *does* preserve the mode of x, where diag() "fails"
@@ -323,22 +290,12 @@ mkDiag <- function(x, n) {
     mkDiag(if(from@diag == "U") as1(from@x) else from@x, n = from@Dim[1])
 
 .ddi2mat <- function(from)
-    base::diag(if(from@diag == "U") as1(from@x) else from@x, nrow = from@Dim[1])
+    `dimnames<-`(base::diag(if(from@diag == "U") as1(from@x) else from@x, nrow = from@Dim[1]),
+                 from@Dimnames)
 
 setAs("ddiMatrix", "matrix", .ddi2mat)
 ## the non-ddi diagonalMatrix -- only "ldiMatrix" currently:
 setAs("diagonalMatrix", "matrix", .diag2mat)
-
-setMethod("as.vector", "diagonalMatrix",
-	  function(x, mode) {
-	      n <- x@Dim[1]
-              mod.x <- mode(x@x)
-	      r <- vector(mod.x, length = n^2)
-	      if(n)
-		  r[1 + 0:(n - 1L) * (n + 1)] <-
-		      if(x@diag == "U") as1(mod=mod.x) else x@x
-	      as.vector(r, mode)
-	  })
 
 setAs("diagonalMatrix", "generalMatrix", # prefer sparse:
       function(from) as(as(from, "CsparseMatrix"), "generalMatrix"))
@@ -346,71 +303,376 @@ setAs("diagonalMatrix", "generalMatrix", # prefer sparse:
 setAs("diagonalMatrix", "denseMatrix",
       function(from) as(as(from, "CsparseMatrix"), "denseMatrix"))
 
-..diag.x <- function(m)                   rep.int(as1(m@x), m@Dim[1])
-.diag.x  <- function(m) if(m@diag == "U") rep.int(as1(m@x), m@Dim[1]) else m@x
-
-.diag.2N <- function(m) {
-    if(m@diag == "U") m@diag <- "N"
-    m
-}
-
-setAs("ddiMatrix", "dgeMatrix", ..2dge)
+setAs("ddiMatrix", "dgeMatrix", function(from) ..2dge(from))
 
 setAs("ddiMatrix", "ddenseMatrix", #-> "dtr"
       function(from) as(as(from, "triangularMatrix"),"denseMatrix"))
 setAs("ldiMatrix", "ldenseMatrix", #-> "ltr"
       function(from) as(as(from, "triangularMatrix"),"denseMatrix"))
+} ## MJ
 
 
-setAs("matrix", "diagonalMatrix",
-      function(from) {
-	  d <- dim(from)
-	  if(d[1] != (n <- d[2])) stop("non-square matrix")
-	  if(any(from[row(from) != col(from)] != 0))
-	      stop("matrix with non-zero off-diagonals cannot be coerced to \"diagonalMatrix\"")
-	  x <- diag(from); names(x) <- NULL # don't want them in 'x' slot
-	  if(is.logical(x)) {
-	      cl <- "ldiMatrix"
-	      uni <- allTrue(x) ## uni := {is it unit-diagonal ?}
-	  } else {
-	      cl <- "ddiMatrix"
-	      uni <- allTrue(x == 1)
-	      storage.mode(x) <- "double"
-	  } ## TODO: complex
-	  new(cl, Dim = c(n,n), diag = if(uni) "U" else "N",
-	      x = if(uni) x[FALSE] else x, Dimnames = .M.DN(from))
-      })
+## ~~~~ CONSTRUCTORS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-## ``generic'' coercion to  diagonalMatrix : build on  isDiagonal() and diag()
-setAs("Matrix", "diagonalMatrix",
-      function(from) {
-	  d <- dim(from)
-	  if(d[1] != (n <- d[2])) stop("non-square matrix")
-	  if(!isDiagonal(from)) stop("matrix is not diagonal")
-	  ## else:
-	  x <- diag(from); names(x) <- NULL # don't want them in 'x' slot
-	  if(is.logical(x)) {
-	      cl <- "ldiMatrix"
-	      uni <- allTrue(x)
-	  } else {
-	      cl <- "ddiMatrix"
-	      uni <- allTrue(x == 1)
-	      storage.mode(x) <- "double"
-	  } ## TODO: complex
-	  new(cl, Dim = c(n,n), diag = if(uni) "U" else "N",
-	      x = if(uni) x[FALSE] else x, Dimnames = from@Dimnames)
-      })
+## diagonalMatrix constructor, allowing either or both of 'n' and 'x' to be
+## missing ... like base::diag() but _not_ also extracting diagonal entries
+Diagonal <- function(n, x = NULL, names = FALSE) {
+    nx <- length(x)
+    if(missing(n))
+        n <- nx
+    else if(!is.numeric(n) || length(n) != 1L || is.na(n) || n < 0L)
+        stop("'n' must be a non-negative integer")
+    if(is.double(n) && n >= .Machine$integer.max + 1)
+        stop("dimensions cannot exceed 2^31-1")
+    n <- as.integer(n) # discarding attributes
+    if(is.null(x)) {
+        r <- new("ddiMatrix")
+        r@diag <- "U"
+        if(n > 0L) {
+            r@Dim <- c(n, n)
+            if(is.character(names) && length(names) == n)
+                r@Dimnames <- list(names, names)
+        }
+        return(r)
+    }
+    if(is.object(x))
+        stop(gettextf("'x' has unsupported class \"%s\"", class(x)[1L]),
+             domain = NA)
+    names.x <- names(x) # keeping for later
+    r <- new(switch(typeof(x),
+                    ## discarding attributes, incl. 'dim' and 'names'
+                    logical = { x <- as.logical(x); "ldiMatrix" },
+                    integer =,
+                    double = { x <- as.double(x); "ddiMatrix" },
+                    stop(gettextf("'x' has unsupported type \"%s\"", typeof(x)),
+                         domain = NA)))
+    if(n == 0L)
+        return(r)
+    if(nx != 1L)
+        r@x <-
+            if(nx == n)
+                x
+            else if(nx > 0L)
+                rep_len(x, n)
+            else stop("attempt to recycle 'x' of length 0 to length 'n' (n > 0)")
+    else if(is.na(x) || x != 1)
+        r@x <- rep.int(x, n)
+    else r@diag <- "U"
+    r@Dim <- c(n, n)
+    if(is.character(names)) {
+        if(length(names) == n)
+            r@Dimnames <- list(names, names)
+    } else if(isTRUE(names) && !is.null(names.x)) {
+        names.x <- rep_len(names.x, n) # we know length(names.x) > 0L
+        r@Dimnames <- list(names.x, names.x)
+    }
+    r
+}
 
+.sparseDiagonal <- function(n, x = NULL, uplo = "U", shape = "t", unitri = TRUE,
+                            kind, cols) {
+    if(missing(n))
+        n <- length(x)
+    else if(!is.numeric(n) || length(n) != 1L || is.na(n) || n < 0L)
+        stop("'n' must be a non-negative integer")
+    if(is.double(n) && n >= .Machine$integer.max + 1)
+        stop("dimensions cannot exceed 2^31-1")
+    n <- nj <- as.integer(n) # stripping attributes
+
+    if(!(missing(shape) ||
+         (is.character(shape) && length(shape) == 1L && !is.na(shape) &&
+          any(shape == c("g", "t", "s")))))
+        stop("'shape' must be one of \"g\", \"t\", \"s\"")
+
+    if(!((m.kind <- missing(kind)) ||
+         (is.character(kind) && length(kind) == 1L && !is.na(kind) &&
+          any(kind == c("d", "l", "n")))))
+        stop("'kind' must be one of \"d\", \"l\", \"n\"")
+
+    if(m.kind || kind != "n") {
+        if(is.null(x))
+           x <- if(m.kind) { kind <- "d"; 1 } else switch(kind, d = 1, l = TRUE)
+        else if(is.object(x))
+            stop(gettextf("'x' has unsupported class \"%s\"",
+                          class(x)[1L]),
+                 domain = NA)
+        else {
+            kind. <- switch(typeof(x),
+                            ## discarding attributes, incl. 'dim' in array case
+                            logical = { x <- as.logical(x); "l" },
+                            integer =,
+                            double = { x <- as.double(x); "d" },
+                            stop(gettextf("'x' has unsupported type \"%s\"",
+                                          typeof(x)),
+                                 domain = NA))
+            if(m.kind)
+                kind <- kind.
+            else if(kind != kind.) {
+                warning(gettextf("mismatch between typeof(x)=\"%s\" and kind=\"%s\"; using kind=\"%s\"",
+                                 typeof(x), kind, kind.),
+                        domain = NA)
+                kind <- kind.
+            }
+        }
+    }
+
+    if(!(m.cols <- missing(cols))) {
+        if(!is.numeric(cols))
+            stop("'cols' must be numeric")
+        else if((nj <- length(cols)) > 0L &&
+                (n == 0L || anyNA(rj <- range(cols)) ||
+                 rj[1L] < 0L || rj[2L] >= n))
+            stop("'cols' has elements not in seq(0, length.out = n)")
+        else {
+            cols <- as.integer(cols)
+            shape <- "g"
+        }
+    }
+
+    r <- new(paste0(kind, shape, "CMatrix"))
+    r@Dim <- c(n, nj)
+    if(shape != "g") {
+        if(!missing(uplo)) {
+            if(is.character(uplo) && length(uplo) == 1L && !is.na(uplo) &&
+               any(uplo == c("U", "L")))
+                r@uplo <- uplo
+            else stop("'uplo' must be \"U\" or \"L\"")
+        }
+        if(shape == "t" && unitri &&
+           (kind == "n" || (!anyNA(x) && all(if(kind == "l") x else x == 1)))) {
+            r@diag <- "U"
+            r@p <- integer(nj + 1)
+            return(r)
+        }
+    }
+    if(nj > 0L) {
+        r@p <- 0:nj
+        r@i <- if(m.cols) 0:(nj - 1L) else cols
+        if(kind != "n") {
+            x <-
+                if((nx <- length(x)) == n)
+                    x
+                else if(nx > 0L)
+                    rep_len(x, n)
+                else stop("attempt to recycle 'x' of length 0 to length 'n' (n > 0)")
+            r@x <- if(m.cols) x else x[1L + cols]
+        }
+    }
+    r
+}
+
+## NB: .triDiagonal() would be misleading; it suggests tridiagonal _banded_
+.trDiagonal <- function(n, x = NULL, uplo = "U", unitri = TRUE, kind)
+    .sparseDiagonal(n, x, uplo, shape = "t", unitri = unitri, kind = kind)
+
+## Package 'spdep' had a (relatively slow) version of this: as_dsCMatrix_I()
+.symDiagonal <- function(n, x = NULL, uplo = "U", kind)
+    .sparseDiagonal(n, x, uplo, shape = "s", kind = kind)
+
+if(FALSE) {
+## This is modified from a post of Bert Gunter to R-help on 1 Sep 2005.
+## Bert's code built on a post by Andy Liaw who was probably influenced
+## by earlier posts, notably one by Scott Chasalow on S-news on 16 Jan
+## 2002, giving his own version written in Dec 1995.
+.bdiag <- function(lst) {
+    ## block-diagonal matrix [a dgTMatrix] from list of matrices
+    stopifnot(is.list(lst), length(lst) >= 1)
+    dims <- vapply(lst, dim, 1L, USE.NAMES=FALSE)
+    ## make sure we had all matrices:
+    if(!(is.matrix(dims) && nrow(dims) == 2))
+	stop("some arguments are not matrices")
+    csdim <- rbind(rep.int(0L, 2),
+                   apply(dims, 1, cumsum))
+    r <- new("dgTMatrix")
+    r@Dim <- as.integer(csdim[nrow(csdim),])
+    add1 <- matrix(1:0, 2,2)
+    for(i in seq_along(lst)) {
+	indx <- apply(csdim[i:(i+1),] + add1, 2, function(n) n[1]:n[2])
+	if(is.null(dim(indx))) ## non-square matrix
+	    r[indx[[1]],indx[[2]]] <- lst[[i]]
+	else ## square matrix
+	    r[indx[,1], indx[,2]] <- lst[[i]]
+    }
+    r
+}
+} else {
+## expand(<mer>) needed something like bdiag() for lower triangular
+## TsparseMatrix, hence Doug Bates provided a much more efficient
+## implementation for those, here extended and generalized:
+.bdiag <- function(lst) {
+    if(!is.list(lst))
+        stop("'lst' must be a list")
+    if((n <- length(lst)) == 0L)
+        return(new("dgTMatrix"))
+    if(n == 1L)
+        return(.CR2T(asCspN(lst[[1L]])))
+
+### FIXME? this is _slow_ when 'lst' is list of 75000 3-by-3 dense matrices
+    lst <- unname(lapply(lst, function(x) .CR2T(asCspN(x))))
+
+    ## NB: class(.CR2T(.)) is always "[dln][gts]TMatrix"
+    cl <- vapply(lst, class, "")
+    kind  <- substr(cl, 1L, 1L) # "d", "l", or "n"
+    shape <- substr(cl, 2L, 2L) # "g", "t", or "s"
+
+    if(!(any(kind == (kind. <- "d")) || any(kind == (kind. <- "l"))))
+        kind. <- "n"
+    else if(any(z <- kind == "n"))
+        lst[z] <- lapply(lst[z], .sparse2kind, kind.)
+
+    shape. <-
+        if(all(symmetric <- shape == "s"))
+            "s"
+        else if(all(shape == "t"))
+            "t"
+        else "g"
+
+    if(shape. != "g") {
+        uplo <- vapply(lst, slot, "", "uplo") # "U" or "L"
+        if(shape. == "s")
+            uplo. <-
+                if(all(z <- uplo == "U"))
+                    "U"
+                else if(!any(z))
+                    "L"
+                else {
+                    uplo.. <- if(2 * sum(z) >= n) { z <- !z; "U" } else "L"
+                    lst[z] <- lapply(lst[z],
+                                     function(x) .Call(R_sparse_transpose, x))
+                    uplo..
+                }
+        else if(any(uplo != (uplo. <- uplo[1L])))
+            shape. <- "g"
+    }
+
+    i_off <- c(0L, cumsum(vapply(lst, function(x) x@Dim[1L], 0L)))
+    j_off <- c(0L, cumsum(vapply(lst, function(x) x@Dim[2L], 0L)))
+
+    r <- new(paste0(kind., shape., "TMatrix"))
+    r@Dim <- r@Dim <- c(i_off[n + 1L], j_off[n + 1L])
+    if(shape. == "g")
+        lst[symmetric] <- lapply(lst[symmetric], .sparse2g)
+    else r@uplo <- uplo.
+    r@i <- unlist(lapply(seq_len(n), function(k) i_off[k] + lst[[k]]@i),
+                  FALSE, FALSE)
+    r@j <- unlist(lapply(seq_len(n), function(k) j_off[k] + lst[[k]]@j),
+                  FALSE, FALSE)
+    if(kind. != "n")
+        r@x <- unlist(lapply(lst, slot, "x"), FALSE, FALSE)
+    r
+}
+}
+
+bdiag <- function(...) {
+    if((n <- ...length()) == 0L)
+        new("dgCMatrix")
+    else if(n > 1L)
+        .T2C(.bdiag(list(...)))
+    else if(!is.list(x <- ..1))
+        as(x, "CsparseMatrix")
+    else if(length(x) == 1L)
+        as(x[[1L]], "CsparseMatrix")
+    else .T2C(.bdiag(x))
+}
+
+
+## ~~~~ METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ .diag.x <- function(m) if(m@diag != "N") rep.int(as1(m@x), m@Dim[1L]) else m@x
+..diag.x <- function(m)                   rep.int(as1(m@x), m@Dim[1L])
 
 setMethod("diag", signature(x = "diagonalMatrix"),
-          function(x = 1, nrow, ncol) .diag.x(x))
+          function(x, nrow, ncol, names = TRUE) {
+              r <- .diag.x(x)
+              if(names &&
+                 !any(vapply(dn <- x@Dimnames, is.null, NA)) &&
+                 {
+                     i <- seq_len(min(x@Dim))
+                     identical(nms <- dn[[1L]][i], dn[[2L]][i])
+                 })
+                  names(r) <- nms
+              r
+          })
+
+setMethod("diag<-", signature(x = "diagonalMatrix"),
+          function(x, value) {
+              n <- x@Dim[1L]
+              nv <- length(value)
+              if(nv != 1L && nv != n)
+                  stop("replacement diagonal has wrong length")
+              x@x <-
+                  if(is.logical(x@x))
+                      switch(typeof(value),
+                             logical = rep_len(value, n),
+                             integer =,
+                             double =
+                                 {
+                                     x <- ..diag2d(x)
+                                     rep_len(as.double(x), n)
+                                 },
+                             stop(gettextf("replacement diagonal has incompatible type \"%s\"", typeof(value)),
+                                  domain = NA))
+                  else
+                      switch(typeof(value),
+                             logical =,
+                             integer =,
+                             double = rep_len(as.double(value), n),
+                             stop(gettextf("replacement diagonal has incompatible type \"%s\"", typeof(value)),
+                                  domain = NA))
+              x@diag <- "N"
+              x
+          })
+
+setMethod("t", signature(x = "diagonalMatrix"),
+          function(x) { x@Dimnames <- x@Dimnames[2:1]; x })
+
+setMethod("band", signature(x = "diagonalMatrix"),
+          function(x, k1, k2, ...)
+              if(k1 <= 0L && k2 >= 0L) x else .setZero(x))
+
+setMethod("triu", signature(x = "diagonalMatrix"),
+          function(x, k = 0, ...)
+              if(k <= 0L) x else .setZero(x))
+
+setMethod("tril", signature(x = "diagonalMatrix"),
+          function(x, k = 0, ...)
+              if(k >= 0L) x else .setZero(x))
+
+setMethod("forceSymmetric", signature(x = "diagonalMatrix", uplo = "character"),
+          function(x, uplo) .diag2sparse(x, ".sC", uplo = uplo))
+
+setMethod("forceSymmetric", signature(x = "diagonalMatrix", uplo = "missing"),
+          function(x, uplo) .diag2sparse(x, ".sC", uplo = "U"))
+
+setMethod("symmpart", signature(x = "diagonalMatrix"),
+          function(x) forceSymmetric(..diag2d(x)))
+
+setMethod("skewpart", signature(x = "diagonalMatrix"),
+          function(x) symmetrizeDimnames(.setZero(x, "d")))
+
+setMethod("isSymmetric", signature(object = "diagonalMatrix"),
+          function(object, checkDN = TRUE, ...) {
+              if(checkDN) {
+                  ca <- function(check.attributes = TRUE, ...) check.attributes
+                  if(ca(...) && !isSymmetricDN(object@Dimnames))
+                      return(FALSE)
+              }
+              TRUE
+          })
+
+setMethod("isTriangular", signature(object = "diagonalMatrix"),
+          function(object, upper = NA, ...)
+              if(is.na(upper)) `attr<-`(TRUE, "kind", "U") else TRUE)
+
+setMethod("isDiagonal", signature(object = "diagonalMatrix"),
+          function(object) TRUE)
 
 subDiag <- function(x, i, j, ..., drop) {
-    x <- as(x, "CsparseMatrix") ## << was "TsparseMatrix" (Csparse is faster now)
+    x <- .diag2sparse(x, ".gC") ## was ->TsparseMatrix but C* is faster now
     x <- if(missing(i))
 	x[, j, drop=drop]
     else if(missing(j))
-	if(nargs() == 4) x[i, , drop=drop] else x[i, drop=drop]
+	if(nargs() == 4L) x[i, , drop=drop] else x[i, drop=drop]
     else
 	x[i,j, drop=drop]
     if(isS4(x) && isDiagonal(x)) as(x, "diagonalMatrix") else x
@@ -423,7 +685,7 @@ setMethod("[", signature(x = "diagonalMatrix", i = "index",
 	  function(x, i, j, ..., drop) {
 	      na <- nargs()
 	      Matrix.msg("diag[i,m,l] : nargs()=", na, .M.level = 2)
-	      if(na == 4)
+	      if(na == 4L)
 		   subDiag(x, i=i, , drop=drop)
 	      else subDiag(x, i=i,   drop=drop)
 	  })
@@ -435,15 +697,15 @@ setMethod("[", signature(x = "diagonalMatrix", i = "missing",
 ## diagonal or sparse ---
 replDiag <- function(x, i, j, ..., value) {
 ## FIXME: if   (i == j)  &&  isSymmetric(value) then -- want symmetricMatrix result! -- or diagMatrix
-    x <- as(x, "CsparseMatrix")# was "Tsparse.." till 2012-07
+    x <- .diag2sparse(x, ".gC") # was ->TsparseMatrix till 2012-07
     if(missing(i))
 	x[, j] <- value
     else if(missing(j)) { ##  x[i , ] <- v  *OR*   x[i] <- v
         na <- nargs()
 ##         message("diagnosing replDiag() -- nargs()= ", na)
-	if(na == 4)
+	if(na == 4L)
             x[i, ] <- value
-	else if(na == 3)
+	else if(na == 3L)
             x[i] <- value
 	else stop(gettextf("Internal bug: nargs()=%d; please report",
 			   na), domain=NA)
@@ -451,9 +713,15 @@ replDiag <- function(x, i, j, ..., value) {
 	x[i,j] <- value
     ## TODO: the following is a bit expensive; have cases above e.g. [i,] where
     ## ----- we could check *much* faster :
-    if(isDiagonal(x))   as(x, "diagonalMatrix") else
-    if(isTriangular(x)) as(x, "triangularMatrix") else
-    if(isSymmetric(x))  as(x, "symmetricMatrix") else x
+    if(isDiagonal(x))
+        .M2diag(x, check = FALSE)
+    else if(isSymmetric(x))
+        forceSymmetric(x)
+    else if(!(it <- isTriangular(x)))
+        x
+    else if(attr(it, "kind") == "U")
+        triu(x)
+    else tril(x)
 }
 
 setReplaceMethod("[", signature(x = "diagonalMatrix", i = "index",
@@ -463,7 +731,7 @@ setReplaceMethod("[", signature(x = "diagonalMatrix", i = "index",
 				j = "missing", value = "replValue"),
 		 function(x,i,j, ..., value) {
                      ## message("before replDiag() -- nargs()= ", nargs())
-                     if(nargs() == 3)
+                     if(nargs() == 3L)
                          replDiag(x, i=i, value=value)
                      else ## nargs() == 4 :
                          replDiag(x, i=i, , value=value)
@@ -479,7 +747,7 @@ setReplaceMethod("[", signature(x = "diagonalMatrix", i = "missing",
 		 function(x,i,j, ..., value)
 	     {
 	      if(all0(value)) { # be faster
-		  r <- new(paste0(.M.kindC(getClassDef(class(x))),"tTMatrix"))# of all "0"
+		  r <- new(paste0(.M.kind(x), "tTMatrix")) # of all "0"
 		  r@Dim <- x@Dim
 		  r@Dimnames <- x@Dimnames
 		  r
@@ -494,13 +762,13 @@ setReplaceMethod("[", signature(x = "diagonalMatrix",
                                 i = "matrix", # 2-col.matrix
 				j = "missing", value = "replValue"),
 		 function(x,i,j, ..., value) {
-		     if(ncol(i) == 2) {
-			 if(all((ii <- i[,1]) == i[,2])) { # replace in diagonal only
+		     if(ncol(i) == 2L) {
+			 if(all((ii <- i[,1L]) == i[,2L])) { # replace in diagonal only
 			     if(x@diag == "U") {
 				 one <- as1(x@x)
 				 if(any(value != one | is.na(value))) {
 				     x@diag <- "N"
-				     x@x <- rep.int(one, x@Dim[1])
+				     x@x <- rep.int(one, x@Dim[1L])
 				 } else return(x)
 			     }
 			     x@x[ii] <- value
@@ -508,9 +776,7 @@ setReplaceMethod("[", signature(x = "diagonalMatrix",
 			 } else { ## no longer diagonal, but remain sparse:
 ###  FIXME:  use  uplo="U" or uplo="L"  (or *not* "triangularMatrix") depending on LE <- i <= j
 ###          all(LE) //  all(!LE) // remaining cases
-
-## --> use                        .diag2tT(from, uplo = "U", kind = .M.kind(from))
-			     x <- as(x, "triangularMatrix") # was "TsparseMatrix"
+			     x <- .diag2sparse(x, ".tC") # was ->TsparseMatrix
 			     x[i] <- value
 			     x
 			 }
@@ -548,441 +814,730 @@ setReplaceMethod("[", signature(x = "diagonalMatrix", i = "index", j = "index",
 				value = "sparseVector"),
 		 replDiag)
 
+## FIXME: Many of these products are not handling 'Dimnames' appropriately ...
 
-setMethod("t", signature(x = "diagonalMatrix"),
-          function(x) { x@Dimnames <- x@Dimnames[2:1] ; x })
-
-setMethod("isDiagonal",   "diagonalMatrix", function(object) TRUE)
-setMethod("isTriangular", "diagonalMatrix", function(object, upper=NA, ...) TRUE)
-setMethod("isSymmetric",  "diagonalMatrix", function(object, ...) TRUE)
-
-setMethod("symmpart", signature(x = "diagonalMatrix"), function(x) x)
-setMethod("skewpart", signature(x = "diagonalMatrix"), function(x) .setZero(x))
-
-cholDiag <- function(x, pivot, ...) { ## x : typically "ddiMatrix"
-    if(x@diag == "U") return(x)
-    ## else
-    if(any(x@x < 0))
-        stop("chol() is undefined for diagonal matrix with negative entries")
-    x@x <- sqrt(x@x)
+.prod.diag.missing <- function(x, boolArith) {
+    if(boolArith) {
+        if(!is.logical(x@x))
+            x <- ..diag2l(x)
+    } else {
+        if(!is.double(x@x))
+            x <- ..diag2d(x)
+        if(x@diag == "N")
+            x@x <- x@x * x@x
+    }
     x
 }
-setMethod("chol", signature(x = "ddiMatrix"), cholDiag)
 
-## chol(L) is L for logical diagonal:
-setMethod("chol", signature(x = "ldiMatrix"), function(x, pivot, ...) x)
+setMethod( "crossprod", signature(x = "diagonalMatrix", y = "missing"),
+          function(x, y = NULL, boolArith = NA, ...) {
+              r <- .prod.diag.missing(x, boolArith = isTRUE(boolArith))
+              r@Dimnames <- r@Dimnames[c(2L, 2L)]
+              r
+          })
 
-setMethod("determinant", signature(x = "diagonalMatrix", logarithm = "logical"),
-	  function(x, logarithm, ...) mkDet(.diag.x(x), logarithm))
+setMethod("tcrossprod", signature(x = "diagonalMatrix", y = "missing"),
+          function(x, y = NULL, boolArith = NA, ...) {
+              r <- .prod.diag.missing(x, boolArith = isTRUE(boolArith))
+              r@Dimnames <- r@Dimnames[c(1L, 1L)]
+              r
+          })
 
-setMethod("norm", signature(x = "diagonalMatrix", type = "character"),
-	  function(x, type, ...) {
-	      if((n <- x@Dim[1]) == 0) return(0) # as for "sparseMatrix"
-	      type <- toupper(substr(type[1], 1, 1))
-	      isU <- (x@diag == "U") # unit-diagonal
-	      if(type == "F") sqrt(if(isU) n else sum(x@x^2))
-	      else { ## norm == "I","1","O","M","2" :
-		  if(isU) 1 else max(abs(x@x))
-	      }
-	  })
-
-
-
-## Basic Matrix Multiplication {many more to add}
-##       ---------------------
-## Note that "ldi" logical are treated as numeric
-diagdiagprod <- function(x, y) {
-    dimCheck(x,y)
-    if(x@diag != "U") {
-	if(y@diag != "U") {
-	    nx <- x@x * y@x
-	    if(is.numeric(nx) && !is.numeric(x@x))
-		x <- as(x, "dMatrix")
-	    x@x <- as.numeric(nx)
-	}
-	x
-    } else ## x is unit diagonal
-	y
-}
-
-##' Boolean Algebra/Arithmetic Product of Diagonal Matrices
-##'  %&%
-diagdiagprodBool <- function(x, y) {
-    dimCheck(x,y)
-    if(x@diag != "U") {
-	if(!is.logical(x@x)) x <- as(x, "lMatrix")
-	if(y@diag != "U") {
-	    nx <- x@x & y@x
-	    x@x <- as.logical(nx)
-	}
-	x
-    } else { ## x is unit diagonal: return y
-	if(!is.logical(y@x)) y <- as(y, "lMatrix")
-	y
+.prod.diag.diag <- function(x, y, boolArith) {
+    if(boolArith) {
+        if(x@diag == "N") {
+            if(!is.logical(x@x))
+                x <- ..diag2l(x)
+            if(y@diag == "N")
+                x@x <- x@x & y@x
+            x
+        } else if(is.logical(y@x))
+            y
+        else ..diag2l(y)
+    } else {
+        if(x@diag == "N") {
+            if(!is.double(x@x))
+                x <- ..diag2d(x)
+            if(y@diag == "N")
+                x@x <- x@x * y@x
+            x
+        } else if(is.double(y@x))
+            y
+        else ..diag2d(y)
     }
 }
 
 setMethod("%*%", signature(x = "diagonalMatrix", y = "diagonalMatrix"),
-	  diagdiagprod, valueClass = "ddiMatrix")
-
-setMethod("%&%", signature(x = "diagonalMatrix", y = "diagonalMatrix"),
-	  diagdiagprodBool, valueClass = "ldiMatrix")# do *not* have "ndiMatrix" !
-
-##' Both Numeric or Boolean Algebra/Arithmetic Product of Diagonal Matrices
-diagdiagprodFlexi <- function(x, y=NULL, boolArith = NA, ...)
-{
-    dimCheck(x,y)
-    bool <- isTRUE(boolArith)
-    if(x@diag != "U") {
-	if(bool && !is.logical(x@x)) x <- as(x, "lMatrix")
-	if(y@diag != "U") {
-	    if(bool) {
-		nx <- x@x & y@x
-		x@x <- as.logical(nx)
-	    } else { ## boolArith is NA or FALSE: ==> numeric, as have *no* "diagMatrix" patter[n]:
-		nx <- x@x * y@x
-		if(is.numeric(nx) && !is.numeric(x@x))
-		    x <- as(x, "dMatrix")
-		x@x <- as.numeric(nx)
-	    }
-	}
-	x
-    } else { ## x is unit diagonal: return y
-	if(bool && !is.logical(y@x)) y <- as(y, "lMatrix")
-	y
-    }
-}
-setMethod("crossprod", signature(x = "diagonalMatrix", y = "diagonalMatrix"),
-	  diagdiagprodFlexi)
-setMethod("tcrossprod", signature(x = "diagonalMatrix", y = "diagonalMatrix"),
-	  diagdiagprodFlexi)
-
-##' crossprod(x) := x'x
-diagprod <- function(x, y = NULL, boolArith = NA, ...) {
-    bool <- isTRUE(boolArith)
-    if(bool && !is.logical(x@x)) x <- as(x, "lMatrix")
-    if(x@diag != "U") {
-        if(bool) {
-            nx <- x@x & y@x
-            x@x <- as.logical(nx)
-        } else { ## boolArith is NA or FALSE: ==> numeric, as have *no* "diagMatrix" patter[n]:
-            nx <- x@x * x@x
-            if(is.numeric(nx) && !is.numeric(x@x))
-                x <- as(x, "dMatrix")
-            x@x <- as.numeric(nx)
-        }
-    }
-    x
-}
-setMethod( "crossprod", signature(x = "diagonalMatrix", y = "missing"), diagprod)
-setMethod("tcrossprod", signature(x = "diagonalMatrix", y = "missing"), diagprod)
-
-
-## analogous to matdiagprod() below:
-diagmatprod <- function(x, y) {
-    ## x is diagonalMatrix
-    dy <- dim(y)
-    if(x@Dim[2L] != dy[1L]) stop("non-matching dimensions")
-    if(prod(dy))
-	Matrix(if(x@diag == "U") y else x@x * y)
-    else
-	Matrix(if(x@diag == "U") y else x@x * y, nrow=dy[1L], ncol=dy[2L])
-}
-setMethod("%*%", signature(x = "diagonalMatrix", y = "matrix"), diagmatprod)
-
-##formals(diagmatprod) <- alist(x=, y=NULL, boolArith = NA, ...=) ## FIXME boolArith
-diagmatprod2 <- function(x, y=NULL, boolArith = NA, ...) {
-    ## x is diagonalMatrix
-    dy <- dim(y)
-    if(x@Dim[2L] != dy[1L]) stop("non-matching dimensions")
-    if(prod(dy))
-	Matrix(if(x@diag == "U") y else x@x * y)
-    else
-	Matrix(if(x@diag == "U") y else x@x * y, nrow=dy[1L], ncol=dy[2L])
-}
-setMethod("crossprod",  signature(x = "diagonalMatrix", y = "matrix"), diagmatprod2)
-
-diagGeprod <- function(x, y) {
-    if(x@Dim[2L] != y@Dim[1L]) stop("non-matching dimensions")
-    if(x@diag != "U") {
-        if(!is.numeric(y@x)) y <- as(y, "dMatrix")
-        y@x <- x@x * y@x
-    }
-    y
-}
-setMethod("%*%", signature(x= "diagonalMatrix", y= "dgeMatrix"), diagGeprod)
-setMethod("%*%", signature(x= "diagonalMatrix", y= "lgeMatrix"), diagGeprod)
-
-diagGeprodBool <- function(x, y) {
-    if(x@Dim[2L] != y@Dim[1L]) stop("non-matching dimensions")
-    if(!is.logical(y@x)) y <- as(y, "lMatrix")
-    if(x@diag != "U")
-        y@x <- x@x & y@x
-    y
-}
-setMethod("%&%", signature(x= "diagonalMatrix", y= "geMatrix"), diagGeprodBool)
-
-diagGeprod2 <- function(x, y=NULL, boolArith = NA, ...) {
-    if(x@Dim[2L] != y@Dim[1L]) stop("non-matching dimensions")
-    bool <- isTRUE(boolArith)
-    if(bool && !is.logical(y@x)) y <- as(y, "lMatrix")
-    else if(!bool && !is.numeric(y@x)) y <- as(y, "dMatrix")
-    if(x@diag != "U")
-        y@x <- if(bool) x@x & y@x else x@x * y@x
-    y
-}
-setMethod("crossprod", signature(x = "diagonalMatrix", y = "dgeMatrix"), diagGeprod2)
-setMethod("crossprod", signature(x = "diagonalMatrix", y = "lgeMatrix"), diagGeprod2)
-
-
-## analogous to diagmatprod() above:
-matdiagprod <- function(x, y) {
-    dx <- dim(x)
-    if(dx[2L] != y@Dim[1L]) stop("non-matching dimensions")
-    Matrix(if(y@diag == "U") x else x * rep(y@x, each = dx[1L]))
-}
-setMethod("%*%", signature(x = "matrix", y = "diagonalMatrix"), matdiagprod)
-
-gediagprod <- function(x, y) {
-    dx <- dim(x)
-    if(dx[2L] != y@Dim[1L]) stop("non-matching dimensions")
-    if(y@diag == "N") {
-        if(!is.numeric(x@x)) x <- as(x, "dMatrix")
-	x@x <- x@x * rep(y@x, each = dx[1L])
-    }
-    x
-}
-setMethod("%*%", signature(x= "dgeMatrix", y= "diagonalMatrix"), gediagprod)
-setMethod("%*%", signature(x= "lgeMatrix", y= "diagonalMatrix"), gediagprod)
-
-gediagprodBool <- function(x, y) {
-    dx <- dim(x)
-    if(dx[2L] != y@Dim[1L]) stop("non-matching dimensions")
-    if(!is.logical(x@x)) x <- as(x, "lMatrix")
-    if(y@diag == "N")
-	x@x <- x@x & rep(y@x, each = dx[1L])
-    x
-}
-setMethod("%&%", signature(x= "geMatrix", y= "diagonalMatrix"), gediagprodBool)
-
-setMethod("tcrossprod",signature(x = "matrix", y = "diagonalMatrix"),
-          function(x, y=NULL, boolArith = NA, ...) {
-              dx <- dim(x)
-              if(dx[2L] != y@Dim[1L]) stop("non-matching dimensions")
-              bool <- isTRUE(boolArith)
-              if(bool && !is.logical(y@x)) y <- as(y, "lMatrix")
-              Matrix(if(y@diag == "U") x else
-                     if(bool) x & rep(y@x, each = dx[1L])
-                     else     x * rep(y@x, each = dx[1L]))
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.diag.diag(x, y, boolArith = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, y@Dimnames, type = 1L)
+              r
           })
 
-setMethod("crossprod", signature(x = "matrix", y = "diagonalMatrix"),
-	  function(x, y=NULL, boolArith = NA, ...) {
-	      dx <- dim(x)
-	      if(dx[1L] != y@Dim[1L]) stop("non-matching dimensions")
-              bool <- isTRUE(boolArith)
-              if(bool && !is.logical(y@x)) y <- as(y, "lMatrix")
-	      Matrix(if(y@diag == "U") t(x) else
-		     if(bool) t(rep.int(y@x, dx[2L]) & x)
-		     else     t(rep.int(y@x, dx[2L]) * x))
-	  })
+setMethod("%&%", signature(x = "diagonalMatrix", y = "diagonalMatrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.diag.diag(x, y, boolArith = TRUE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, y@Dimnames, type = 1L)
+              r
+          })
 
+setMethod( "crossprod", signature(x = "diagonalMatrix", y = "diagonalMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 2L)
+              r <- .prod.diag.diag(x, y, boolArith = isTRUE(boolArith))
+              r@Dimnames <- mmultDimnames(x@Dimnames, y@Dimnames, type = 2L)
+              r
+          })
 
-gediagprod2 <- function(x, y=NULL, boolArith = NA, ...) {
-    dx <- dim(x)
-    if(dx[2L] != y@Dim[1L]) stop("non-matching dimensions")
-    bool <- isTRUE(boolArith)
-    if(bool && !is.logical(x@x)) x <- as(x, "lMatrix")
-    else if(!bool && !is.numeric(x@x)) x <- as(x, "dMatrix")
-    if(y@diag == "N")
-	x@x <- if(bool) x@x & rep(y@x, each = dx[1L])
-	       else     x@x * rep(y@x, each = dx[1L])
-    x
+setMethod("tcrossprod", signature(x = "diagonalMatrix", y = "diagonalMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 3L)
+              r <- .prod.diag.diag(x, y, boolArith = isTRUE(boolArith))
+              r@Dimnames <- mmultDimnames(x@Dimnames, y@Dimnames, type = 3L)
+              r
+          })
+
+.prod.diag.m <- function(x, y, boolArith, trans) {
+    ## MJ: .m2ge() avoids a copy when argument is unreferenced,
+    ##     so it is more efficient than Matrix() here
+    if(boolArith) {
+        kind <- "n"
+        op <- `&`
+    } else {
+        kind <- "d"
+        op <- `*`
+    }
+    .m2ge(if(x@diag == "N")
+              op(x@x, if(trans) t(y) else y)
+          else if(trans)
+              t(y)
+          else y,
+          kind)
 }
-setMethod("tcrossprod", signature(x = "dgeMatrix", y = "diagonalMatrix"), gediagprod2)
-setMethod("tcrossprod", signature(x = "lgeMatrix", y = "diagonalMatrix"), gediagprod2)
 
+setMethod("%*%", signature(x = "diagonalMatrix", y = "matrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, dim(y), type = 1L)
+              r <- .prod.diag.m(x, y, boolArith = FALSE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 1L)
+              r
+          })
 
-## crossprod {more of these}
+setMethod("%&%", signature(x = "diagonalMatrix", y = "matrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, dim(y), type = 1L)
+              r <- .prod.diag.m(x, y, boolArith = TRUE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 1L)
+              r
+          })
 
-## tcrossprod --- all are not yet there: do the dense ones here:
+setMethod( "crossprod", signature(x = "diagonalMatrix", y = "matrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, dim(y), type = 2L)
+              r <- .prod.diag.m(x, y, boolArith = isTRUE(boolArith),
+                                trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 2L)
+              r
+          })
+
+setMethod("tcrossprod", signature(x = "diagonalMatrix", y = "matrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, dim(y), type = 3L)
+              r <- .prod.diag.m(x, y, boolArith = isTRUE(boolArith),
+                                trans = TRUE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 3L)
+              r
+          })
+
+.prod.m.diag <- function(x, y, boolArith, trans) {
+    ## MJ: .m2ge() avoids a copy when argument is unreferenced,
+    ##     so it is more efficient than Matrix() here
+    if(boolArith) {
+        kind <- "n"
+        op <- `&`
+    } else {
+        kind <- "d"
+        op <- `*`
+    }
+    .m2ge(if(y@diag == "N")
+              op(if(trans) t(x) else x,
+                 rep(y@x, each = dim(x)[1L + trans]))
+          else if(trans)
+              t(x)
+          else x,
+          kind)
+}
+
+setMethod("%*%", signature(x = "matrix", y = "diagonalMatrix"),
+	  function(x, y) {
+              mmultDim(dim(x), y@Dim, type = 1L)
+              r <- .prod.m.diag(x, y, boolArith = FALSE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
+
+setMethod("%&%", signature(x = "matrix", y = "diagonalMatrix"),
+	  function(x, y) {
+              mmultDim(dim(x), y@Dim, type = 1L)
+              r <- .prod.m.diag(x, y, boolArith = TRUE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
+
+setMethod( "crossprod", signature(x = "matrix", y = "diagonalMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(dim(x), y@Dim, type = 2L)
+              r <- .prod.m.diag(x, y, boolArith = isTRUE(boolArith),
+                                trans = TRUE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 2L)
+              r
+          })
+
+setMethod("tcrossprod", signature(x = "matrix", y = "diagonalMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(dim(x), y@Dim, type = 3L)
+              r <- .prod.m.diag(x, y, boolArith = isTRUE(boolArith),
+                                trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 3L)
+              r
+          })
+
+## FIXME: <unit diagonalMatrix> %*% <symmetricMatrix> should not be symmetric,
+##        because the inherited 'rownames' and 'colnames' could differ ...
+
+.prod.diag.dense <- function(x, y, boolArith, trans) {
+    if(boolArith) {
+        y <- ..dense2n(y)
+        op <- `&`
+        one <- TRUE
+    } else {
+        if(!is.double(y@x))
+            y <- ..dense2d(y)
+        op <- `*`
+        one <- 1
+    }
+    if(x@diag == "N") {
+        y@x <-
+            if(!.hasSlot(y, "uplo")) {
+                ## y=[nd]geMatrix
+                if(trans)
+                    y <- t(y)
+                y@factors <- list()
+                op(x@x, y@x)
+            } else if(.hasSlot(y, "diag")) {
+                ## y=[nd]t[rp]Matrix
+                if(trans)
+                    y <- t(y)
+                if(y@diag != "N")
+                    diag(y) <- one
+                if(length(y@x) == (n <- y@Dim[1L])^2)
+                    op(x@x, y@x)
+                else if(y@uplo == "U")
+                    op(x@x[sequence.default(1:n, rep.int(1L, n))], y@x)
+                else
+                    op(x@x[sequence.default(n:1,            1:n)], y@x)
+            } else {
+                ## y=[nd]s[yp]Matrix
+                y <- .dense2g(y)
+                y@factors <- list()
+                op(x@x, y@x)
+            }
+        y
+    } else if(trans)
+        t(y)
+    else y
+}
 
 setMethod("%*%", signature(x = "diagonalMatrix", y = "denseMatrix"),
-	  function(x, y) if(x@diag == "U") y else x %*% as(y, "generalMatrix"))
-setMethod("%*%", signature(x = "denseMatrix", y = "diagonalMatrix"),
-	  function(x, y) if(y@diag == "U") x else as(x, "generalMatrix") %*% y)
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.diag.dense(x, y, boolArith = FALSE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 1L)
+              r
+          })
 
+setMethod("%&%", signature(x = "diagonalMatrix", y = "denseMatrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.diag.dense(x, y, boolArith = TRUE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 1L)
+              r
+          })
 
-## FIXME:
-## setMethod("tcrossprod", signature(x = "diagonalMatrix", y = "denseMatrix"),
-## 	  function(x, y = NULL) {
-##           })
+setMethod( "crossprod", signature(x = "diagonalMatrix", y = "denseMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 2L)
+              r <- .prod.diag.dense(x, y, boolArith = isTRUE(boolArith),
+                                    trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 2L)
+              r
+          })
 
-##' @param x CsparseMatrix
-##' @param y diagonalMatrix
-##' @return x %*% y
-Cspdiagprod <- function(x, y, boolArith = NA, ...) {
-    if((m <- ncol(x)) != y@Dim[1L]) stop("non-matching dimensions")
-    if(y@diag == "N") { ## otherwise: y == Diagonal(n) : multiplication is identity
-	x <- .Call(Csparse_diagU2N, x)
-	cx <- getClass(class(x))
-	if(!all(y@x[1L] == y@x[-1L]) && extends(cx, "symmetricMatrix"))
-	    x <- as(x, "generalMatrix")
-	ind <- rep.int(seq_len(m), x@p[-1] - x@p[-m-1L])
-	if(isTRUE(boolArith)) {
-	    if(extends(cx, "nMatrix")) x <- as(x, "lMatrix") # so, has y@x
-	    x@x <- r <- x@x & y@x[x@i + 1L]
-	    if(!anyNA(r) && !extends(cx, "diagonalMatrix")) x <- as(drop0(x), "nMatrix")
-	} else {
-	    if(!extends(cx, "dMatrix")) x <- as(x, "dMatrix") # <- FIXME if we have zMatrix
-	    x@x <- x@x * y@x[ind]
-	}
-        if(.hasSlot(x, "factors") && length(x@factors)) {# drop cashed ones
-	    ## instead of dropping all factors, be smart about some
-	    ## TODO ......
-	    x@factors <- list()
-	}
+setMethod("tcrossprod", signature(x = "diagonalMatrix", y = "denseMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 3L)
+              r <- .prod.diag.dense(x, y, boolArith = isTRUE(boolArith),
+                                    trans = TRUE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 3L)
+              r
+          })
+
+.prod.dense.diag <- function(x, y, boolArith, trans) {
+    if(boolArith) {
+        x <- ..dense2n(x)
+        op <- `&`
+        one <- TRUE
+    } else {
+        if(!is.double(x@x))
+            x <- ..dense2d(x)
+        op <- `*`
+        one <- 1
+    }
+    if(y@diag == "N") {
+        x@x <-
+            if(!.hasSlot(x, "uplo")) {
+                ## x=[nd]geMatrix
+                if(trans)
+                    x <- t(x)
+                x@factors <- list()
+                op(x@x, rep(y@x, each = x@Dim[1L]))
+            } else if(.hasSlot(x, "diag")) {
+                ## x=[nd]t[rp]Matrix
+                if(trans)
+                    x <- t(x)
+                if(x@diag != "N")
+                    diag(x) <- one
+                if(length(x@x) == (n <- x@Dim[1L])^2)
+                    op(x@x, rep(y@x, each = x@Dim[1L]))
+                else if(x@uplo == "U")
+                    op(x@x, rep.int(y@x, 1:n))
+                else
+                    op(x@x, rep.int(y@x, n:1))
+            } else {
+                ## x=[nd]s[yp]Matrix
+                x <- .dense2g(x)
+                x@factors <- list()
+                op(x@x, rep(y@x, each = x@Dim[1L]))
+            }
         x
-    } else { #	y is unit-diagonal ==> "return x"
-	cx <- getClass(class(x))
-	if(isTRUE(boolArith)) {
-	    is.l <- if(extends(cx, "dMatrix")) { ## <- FIXME: extend once we have iMatrix, zMatrix
-		x <- as(x, "lMatrix"); TRUE } else extends(cx, "lMatrix")
-	    if(is.l && !anyNA(x@x)) as(drop0(x), "nMatrix")
-	    else if(is.l) x else # defensive:
-	    as(x, "lMatrix")
-	} else {
-	    ## else boolArith is  NA or FALSE {which are equivalent here, das diagonal = "numLike"}
-	    if(extends1of(cx, c("nMatrix", "lMatrix")))
-		as(x, "dMatrix") else x
-	}
-    }
+    } else if(trans)
+        t(x)
+    else x
 }
 
-##' @param x diagonalMatrix
-##' @param y CsparseMatrix
-##' @return x %*% y
-diagCspprod <- function(x, y, boolArith = NA, ...) {
-    if(x@Dim[2L] != y@Dim[1L]) stop("non-matching dimensions")
+setMethod("%*%", signature(x = "denseMatrix", y = "diagonalMatrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.dense.diag(x, y, boolArith = FALSE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
+
+setMethod("%&%", signature(x = "denseMatrix", y = "diagonalMatrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.dense.diag(x, y, boolArith = TRUE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
+
+setMethod( "crossprod", signature(x = "denseMatrix", y = "diagonalMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 2L)
+              r <- .prod.dense.diag(x, y, boolArith = isTRUE(boolArith),
+                                    trans = TRUE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 2L)
+              r
+          })
+
+setMethod("tcrossprod", signature(x = "denseMatrix", y = "diagonalMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 3L)
+              r <- .prod.dense.diag(x, y, boolArith = isTRUE(boolArith),
+                                    trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 3L)
+              r
+          })
+
+.prod.diag.Csparse <- function(x, y, boolArith, trans) {
     if(x@diag == "N") {
-	y <- .Call(Csparse_diagU2N, y)
-	cy <- getClass(class(y))
-	if(!all(x@x[1L] == x@x[-1L]) && extends(cy, "symmetricMatrix"))
-	    y <- as(y, "generalMatrix")
-	if(isTRUE(boolArith)) {
-	    if(extends(cy, "nMatrix")) y <- as(y, "lMatrix") # so, has y@x
-	    y@x <- r <- y@x & x@x[y@i + 1L]
-	    if(!anyNA(r) && !extends(cy, "diagonalMatrix")) y <- as(drop0(y), "nMatrix")
-	} else {
-	    if(!extends(cy, "dMatrix")) y <- as(y, "dMatrix") # <- FIXME if we have zMatrix
-	    y@x <- y@x * x@x[y@i + 1L]
-	}
-	if(.hasSlot(y, "factors") && length(y@factors)) {
-     ## if(.hasSlot(y, "factors") && length(yf <- y@factors)) { ## -- TODO? --
-	    ## instead of dropping all factors, be smart about some
-	    ## keep <- character()
-	    ## if(any(names(yf) == "LU")) { ## <- not easy: y = P'LUQ,  x y = xP'LUQ => LU ???
-	    ##     keep <- "LU"
-	    ## }
-	    ## y@factors <- yf[keep]
-	    y@factors <- list()
+        y <- .sparse2kind(y, if(boolArith) "l" else "d", drop0 = FALSE)
+        if(!.hasSlot(y, "uplo")) {
+            ## y=[ld]gCMatrix
+            if(trans)
+                y <- t(y)
+            y@factors <- list()
+        } else if(.hasSlot(y, "diag")) {
+            ## y=[ld]tCMatrix
+            if(trans)
+                y <- t(y)
+            if(y@diag != "N")
+                y <- ..diagU2N(y)
+        } else {
+            ## y=[ld]sCMatrix
+            y <- .sparse2g(y)
+            y@factors <- list()
         }
-        y
-    } else { ## x @ diag  == "U"
-	cy <- getClass(class(y))
-	if(isTRUE(boolArith)) {
-	    is.l <- if(extends(cy, "dMatrix")) { ## <- FIXME: extend once we have iMatrix, zMatrix
-		y <- as(y, "lMatrix"); TRUE } else extends(cy, "lMatrix")
-	    if(is.l && !anyNA(y@x)) as(drop0(y), "nMatrix")
-	    else if(is.l) y else # defensive:
-	    as(y, "lMatrix")
-	} else {
-	    ## else boolArith is  NA or FALSE {which are equivalent here, das diagonal = "numLike"}
-	    if(extends1of(cy, c("nMatrix", "lMatrix")))
-		as(y, "dMatrix") else y
-	}
-    }
+        op <- if(boolArith) `&` else `*`
+        y@x <- op(x@x[y@i + 1L], y@x)
+        if(boolArith) .sparse2kind(y, "n", drop0 = TRUE) else y
+    } else
+        (if(trans) t else identity)(
+            if(boolArith)
+                .sparse2kind(y, "n", drop0 = TRUE)
+            else .sparse2kind(y, "d", drop0 = FALSE))
 }
-
-## + 'boolArith' argument  { ==> .local() is used in any case; keep formals simple :}
-setMethod("crossprod", signature(x = "diagonalMatrix", y = "CsparseMatrix"),
-	  function(x, y=NULL, boolArith=NA, ...) diagCspprod(x, y, boolArith=boolArith))
-
-setMethod("crossprod", signature(x = "diagonalMatrix", y = "sparseMatrix"),
-	  function(x, y=NULL, boolArith=NA, ...)
-	      diagCspprod(x, as(y, "CsparseMatrix"), boolArith=boolArith))
-
-## Prefer calling diagCspprod to Cspdiagprod if going to transpose anyway
-##  x'y == (y'x)'
-setMethod("crossprod", signature(x = "CsparseMatrix", y = "diagonalMatrix"),
-	  function(x, y=NULL, boolArith=NA, ...) t(diagCspprod(y, x, boolArith=boolArith)))
-
-setMethod("crossprod", signature(x = "sparseMatrix", y = "diagonalMatrix"),
-	  function(x, y=NULL, boolArith=NA, ...) t(diagCspprod(y, as(x, "Csparsematrix"), boolArith=boolArith)))
-
-setMethod("tcrossprod", signature(x = "diagonalMatrix", y = "CsparseMatrix"),
-	  function(x, y=NULL, boolArith=NA, ...) diagCspprod(x, t(y), boolArith=boolArith))
-
-setMethod("tcrossprod", signature(x = "diagonalMatrix", y = "sparseMatrix"),
-	  function(x, y=NULL, boolArith=NA, ...) diagCspprod(x, t(as(y, "CsparseMatrix")), boolArith=boolArith))
-
-setMethod("tcrossprod", signature(x = "CsparseMatrix", y = "diagonalMatrix"),
-	  function(x, y=NULL, boolArith=NA, ...) Cspdiagprod(x, y, boolArith=boolArith))
-
-setMethod("tcrossprod", signature(x = "sparseMatrix", y = "diagonalMatrix"),
-	  function(x, y=NULL, boolArith=NA, ...) Cspdiagprod(as(x, "CsparseMatrix"), y, boolArith=boolArith))
 
 setMethod("%*%", signature(x = "diagonalMatrix", y = "CsparseMatrix"),
-	  function(x, y) diagCspprod(x, y, boolArith=NA))
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.diag.Csparse(x, y, boolArith = FALSE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 1L)
+              r
+          })
+
 setMethod("%&%", signature(x = "diagonalMatrix", y = "CsparseMatrix"),
-	  function(x, y) diagCspprod(x, y, boolArith=TRUE))
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.diag.Csparse(x, y, boolArith = TRUE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 1L)
+              r
+          })
 
-## instead of "sparseMatrix", use: [RT]sparse.. ("closer" in method dispatch)
-for(cl in c("TsparseMatrix", "RsparseMatrix")) {
+setMethod( "crossprod", signature(x = "diagonalMatrix", y = "CsparseMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 2L)
+              r <- .prod.diag.Csparse(x, y, boolArith = isTRUE(boolArith),
+                                      trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 2L)
+              r
+          })
 
-setMethod("%*%", signature(x = "diagonalMatrix", y = "sparseMatrix"),
-	  function(x, y) diagCspprod(as(x, "CsparseMatrix"), y, boolArith=NA))
+setMethod("tcrossprod", signature(x = "diagonalMatrix", y = "CsparseMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 3L)
+              r <- .prod.diag.Csparse(x, y, boolArith = isTRUE(boolArith),
+                                      trans = TRUE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 3L)
+              r
+          })
 
-setMethod("%*%", signature(x = "sparseMatrix", y = "diagonalMatrix"),
-	  function(x, y) Cspdiagprod(as(x, "CsparseMatrix"), y, boolArith=NA))
-
-setMethod("%&%", signature(x = "diagonalMatrix", y = "sparseMatrix"),
-	  function(x, y) diagCspprod(as(x, "CsparseMatrix"), y, boolArith=TRUE))
-
-setMethod("%&%", signature(x = "sparseMatrix", y = "diagonalMatrix"),
-	  function(x, y) Cspdiagprod(as(x, "CsparseMatrix"), y, boolArith=TRUE))
-
+.prod.Csparse.diag <- function(x, y, boolArith, trans) {
+    if(y@diag == "N") {
+        x <- .sparse2kind(x, if(boolArith) "l" else "d", drop0 = FALSE)
+        if(!.hasSlot(x, "uplo")) {
+            ## x=[ld]gCMatrix
+            if(trans)
+                x <- t(x)
+            x@factors <- list()
+        } else if(.hasSlot(x, "diag")) {
+            ## x=[ld]tCMatrix
+            if(trans)
+                x <- t(x)
+            if(x@diag != "N")
+                x <- ..diagU2N(x)
+        } else {
+            ## x=[ld]sCMatrix
+            x <- .sparse2g(x)
+            x@factors <- list()
+        }
+        dp <- if((n <- length(p <- x@p)) > 1L) p[-1L] - p[-n] else integer(0L)
+        x@x <- (if(boolArith) `&` else `*`)(x@x, rep.int(y@x, dp))
+        if(boolArith) .sparse2kind(x, "n", drop0 = TRUE) else x
+    } else
+        (if(trans) t else identity)(
+            if(boolArith)
+                .sparse2kind(x, "n", drop0 = TRUE)
+            else .sparse2kind(x, "d", drop0 = FALSE))
 }
 
 setMethod("%*%", signature(x = "CsparseMatrix", y = "diagonalMatrix"),
-	  function(x, y) Cspdiagprod(x, y, boolArith=NA))
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.Csparse.diag(x, y, boolArith = FALSE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
+
 setMethod("%&%", signature(x = "CsparseMatrix", y = "diagonalMatrix"),
-	  function(x, y) Cspdiagprod(x, y, boolArith=TRUE))
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.Csparse.diag(x, y, boolArith = TRUE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
 
-## TODO: Write tests in ./tests/ which ensure that many "ops" with diagonal*
-##       do indeed work by going through sparse (and *not* ddense)!
+setMethod( "crossprod", signature(x = "CsparseMatrix", y = "diagonalMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 2L)
+              r <- .prod.Csparse.diag(x, y, boolArith = isTRUE(boolArith),
+                                      trans = TRUE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 2L)
+              r
+          })
 
-setMethod("solve", signature(a = "diagonalMatrix", b = "missing"),
-	  function(a, b, ...) {
-	      a@x <- 1/ a@x
-	      a@Dimnames <- a@Dimnames[2:1]
-	      a
-	  })
+setMethod("tcrossprod", signature(x = "CsparseMatrix", y = "diagonalMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 3L)
+              r <- .prod.Csparse.diag(x, y, boolArith = isTRUE(boolArith),
+                                      trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 3L)
+              r
+          })
 
-solveDiag <- function(a, b, ...) {
-    if(a@Dim[1L] != nrow(b))
-        stop("incompatible matrix dimensions")
-    ## trivially invert a 'in place' and multiply:
-    a@x <- 1/ a@x
-    a@Dimnames <- a@Dimnames[2:1]
-    a %*% b
+.prod.diag.Rsparse <- function(x, y, boolArith, trans) {
+    if(x@diag == "N") {
+        y <- .sparse2kind(y, if(boolArith) "l" else "d", drop0 = FALSE)
+        if(!.hasSlot(y, "uplo")) {
+            ## y=[ld]gRMatrix
+            if(trans)
+                y <- t(y)
+            y@factors <- list()
+        } else if(.hasSlot(y, "diag")) {
+            ## y=[ld]tRMatrix
+            if(trans)
+                y <- t(y)
+            if(y@diag != "N")
+                y <- ..diagU2N(y)
+        } else {
+            ## y=[ld]sRMatrix
+            y <- .sparse2g(y)
+            y@factors <- list()
+        }
+        dp <- if((n <- length(p <- x@p)) > 1L) p[-1L] - p[-n] else integer(0L)
+        y@x <- (if(boolArith) `&` else `*`)(rep.int(x@x, dp), y@x)
+        if(boolArith) .sparse2kind(y, "n", drop0 = TRUE) else y
+    } else
+        (if(trans) t else identity)(
+            if(boolArith)
+                .sparse2kind(y, "n", drop0 = TRUE)
+            else .sparse2kind(y, "d", drop0 = FALSE))
 }
-setMethod("solve", signature(a = "diagonalMatrix", b = "matrix"),
-          solveDiag)
-setMethod("solve", signature(a = "diagonalMatrix", b = "Matrix"),
-          solveDiag)
 
-## Schur()  ---> ./eigen.R
+setMethod("%*%", signature(x = "diagonalMatrix", y = "RsparseMatrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.diag.Rsparse(x, y, boolArith = FALSE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 1L)
+              r
+          })
+
+setMethod("%&%", signature(x = "diagonalMatrix", y = "RsparseMatrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.diag.Rsparse(x, y, boolArith = TRUE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 1L)
+              r
+          })
+
+setMethod( "crossprod", signature(x = "diagonalMatrix", y = "RsparseMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 2L)
+              r <- .prod.diag.Rsparse(x, y, boolArith = isTRUE(boolArith),
+                                      trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 2L)
+              r
+          })
+
+setMethod("tcrossprod", signature(x = "diagonalMatrix", y = "RsparseMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 3L)
+              r <- .prod.diag.Rsparse(x, y, boolArith = isTRUE(boolArith),
+                                      trans = TRUE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 3L)
+              r
+          })
+
+.prod.Rsparse.diag <- function(x, y, boolArith, trans) {
+    if(y@diag == "N") {
+        x <- .sparse2kind(x, if(boolArith) "l" else "d", drop0 = FALSE)
+        if(!.hasSlot(x, "uplo")) {
+            ## x=[ld]gRMatrix
+            if(trans)
+                x <- t(x)
+            x@factors <- list()
+        } else if(.hasSlot(x, "diag")) {
+            ## x=[ld]tRMatrix
+            if(trans)
+                x <- t(x)
+            if(x@diag != "N")
+                x <- ..diagU2N(x)
+        } else {
+            ## x=[ld]sRMatrix
+            x <- .sparse2g(x)
+            x@factors <- list()
+        }
+        op <- if(boolArith) `&` else `*`
+        x@x <- op(x@x, y@x[x@j + 1L])
+        if(boolArith) .sparse2kind(x, "n", drop0 = TRUE) else x
+    } else
+        (if(trans) t else identity)(
+            if(boolArith)
+                .sparse2kind(x, "n", drop0 = TRUE)
+            else .sparse2kind(x, "d", drop0 = FALSE))
+}
+
+setMethod("%*%", signature(x = "RsparseMatrix", y = "diagonalMatrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.Rsparse.diag(x, y, boolArith = FALSE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
+
+setMethod("%&%", signature(x = "RsparseMatrix", y = "diagonalMatrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.Rsparse.diag(x, y, boolArith = TRUE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
+
+setMethod( "crossprod", signature(x = "RsparseMatrix", y = "diagonalMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 2L)
+              r <- .prod.Rsparse.diag(x, y, boolArith = isTRUE(boolArith),
+                                      trans = TRUE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 2L)
+              r
+          })
+
+setMethod("tcrossprod", signature(x = "RsparseMatrix", y = "diagonalMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 3L)
+              r <- .prod.Rsparse.diag(x, y, boolArith = isTRUE(boolArith),
+                                      trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 3L)
+              r
+          })
+
+.prod.diag.Tsparse <- function(x, y, boolArith, trans) {
+    if(x@diag == "N") {
+        y <- .sparse2kind(y, if(boolArith) "l" else "d", drop0 = FALSE)
+        if(!.hasSlot(y, "uplo")) {
+            ## y=[ld]gTMatrix
+            if(trans)
+                y <- t(y)
+            y@factors <- list()
+        } else if(.hasSlot(y, "diag")) {
+            ## y=[ld]tTMatrix
+            if(trans)
+                y <- t(y)
+            if(y@diag != "N")
+                y <- ..diagU2N(y)
+        } else {
+            ## y=[ld]sTMatrix
+            y <- .sparse2g(y)
+            y@factors <- list()
+        }
+        op <- if(boolArith) `&` else `*`
+        y@x <- op(x@x[y@i + 1L], y@x)
+        if(boolArith) .sparse2kind(y, "n", drop0 = TRUE) else y
+    } else
+        (if(trans) t else identity)(
+            if(boolArith)
+                .sparse2kind(y, "n", drop0 = TRUE)
+            else .sparse2kind(y, "d", drop0 = FALSE))
+}
+
+setMethod("%*%", signature(x = "diagonalMatrix", y = "TsparseMatrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.diag.Tsparse(x, y, boolArith = FALSE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 1L)
+              r
+          })
+
+setMethod("%&%", signature(x = "diagonalMatrix", y = "TsparseMatrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.diag.Tsparse(x, y, boolArith = TRUE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 1L)
+              r
+          })
+
+setMethod( "crossprod", signature(x = "diagonalMatrix", y = "TsparseMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 2L)
+              r <- .prod.diag.Tsparse(x, y, boolArith = isTRUE(boolArith),
+                                      trans = FALSE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 2L)
+              r
+          })
+
+setMethod("tcrossprod", signature(x = "diagonalMatrix", y = "TsparseMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 3L)
+              r <- .prod.diag.Tsparse(x, y, boolArith = isTRUE(boolArith),
+                                      trans = TRUE)
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 3L)
+              r
+          })
+
+.prod.Tsparse.diag <- function(x, y, boolArith, trans) {
+    if(y@diag == "N") {
+        x <- .sparse2kind(x, if(boolArith) "l" else "d", drop0 = FALSE)
+        if(!.hasSlot(x, "uplo")) {
+            ## x=[ld]gTMatrix
+            if(trans)
+                x <- t(x)
+            x@factors <- list()
+        } else if(.hasSlot(x, "diag")) {
+            ## x=[ld]tTMatrix
+            if(trans)
+                x <- t(x)
+            if(x@diag != "N")
+                x <- ..diagU2N(x)
+        } else {
+            ## x=[ld]sTMatrix
+            x <- .sparse2g(x)
+            x@factors <- list()
+        }
+        op <- if(boolArith) `&` else `*`
+        x@x <- op(x@x, y@x[x@j + 1L])
+        if(boolArith) .sparse2kind(x, "n", drop0 = TRUE) else x
+    } else
+        (if(trans) t else identity)(
+            if(boolArith)
+                .sparse2kind(x, "n", drop0 = TRUE)
+            else .sparse2kind(x, "d", drop0 = FALSE))
+}
+
+setMethod("%*%", signature(x = "TsparseMatrix", y = "diagonalMatrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.Tsparse.diag(x, y, boolArith = FALSE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
+
+setMethod("%&%", signature(x = "TsparseMatrix", y = "diagonalMatrix"),
+	  function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- .prod.Tsparse.diag(x, y, boolArith = TRUE, trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
+
+setMethod( "crossprod", signature(x = "TsparseMatrix", y = "diagonalMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 2L)
+              r <- .prod.Tsparse.diag(x, y, boolArith = isTRUE(boolArith),
+                                      trans = TRUE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 2L)
+              r
+          })
+
+setMethod("tcrossprod", signature(x = "TsparseMatrix", y = "diagonalMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 3L)
+              r <- .prod.Tsparse.diag(x, y, boolArith = isTRUE(boolArith),
+                                      trans = FALSE)
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 3L)
+              r
+          })
 
 
 
@@ -997,19 +1552,24 @@ diagOdiag <- function(e1,e2) {
 		       if(is.numeric(e2@x)) 0 else FALSE)
     if(is0(r00)) { ##  r00 == 0 or FALSE --- result *is* diagonal
 	if(is.numeric(r)) { # "double" *or* "integer"
-	    if(is.numeric(e2@x)) {
-		e2@x <- r; return(.diag.2N(e2)) }
-	    if(!is.numeric(e1@x))
+            if(!is.double(r))
+                r <- as.double(r)
+            if(is.double(e2@x)) {
+		e2@x <- r
+                e2@diag <- "N"
+                return(e2)
+            }
+	    if(!is.double(e1@x))
 		## e.g. e1, e2 are logical;
-		e1 <- as(e1, "dMatrix")
-	    if(!is.double(r)) r <- as.double(r)
+		e1 <- ..diag2d(e1)
 	}
 	else if(is.logical(r))
-	    e1 <- as(e1, "lMatrix")
+	    e1 <- ..diag2l(e1)
 	else stop(gettextf("intermediate 'r' is of type %s",
 			   typeof(r)), domain=NA)
 	e1@x <- r
-	.diag.2N(e1)
+        e1@diag <- "N"
+	e1
     }
     else { ## result not diagonal, but at least symmetric:
         ## e.g., m == m
@@ -1019,7 +1579,8 @@ diagOdiag <- function(e1,e2) {
 	d <- e1@Dim
 	n <- d[1L]
 	stopifnot(length(r) == n)
-	if(isNum && !is.double(r)) r <- as.double(r)
+	if(isNum && !is.double(r))
+            r <- as.double(r)
 	## faster (?) than  m <- matrix(r00,n,n); diag(m) <- r ; as.vector(m)
         xx <- rbind(r, matrix(r00,n,n), deparse.level=0L)[seq_len(n*n)]
 	newcl <-
@@ -1080,8 +1641,10 @@ setMethod("Arith", signature(e1 = "triangularMatrix", e2 = "diagonalMatrix"),
           function(e1,e2)
       { ## this must only trigger for *dense* e1
 	  switch(.Generic,
-		 "+" = .Call(dtrMatrix_addDiag, as(e1,"dtrMatrix"),   .diag.x(e2)),
-		 "-" = .Call(dtrMatrix_addDiag, as(e1,"dtrMatrix"), - .diag.x(e2)),
+		 "+" = .Call(dtrMatrix_addDiag,
+                             unpack(..dense2d(e1)),   .diag.x(e2)),
+		 "-" = .Call(dtrMatrix_addDiag,
+                             unpack(..dense2d(e1)), - .diag.x(e2)),
 		 "*" = {
 		     n <- e2@Dim[1L]
 		     d2 <- if(e2@diag == "U") { # unit-diagonal
@@ -1094,10 +1657,10 @@ setMethod("Arith", signature(e1 = "triangularMatrix", e2 = "diagonalMatrix"),
 		     e2
 		 },
 		 "^" = { ## will be dense ( as  <ANY> ^ 0 == 1 ):
-		     e1 ^ as(e2, "denseMatrix")
+		     e1 ^ .diag2dense(e2, ".ge")
 		 },
 		 ## otherwise:
-		 callGeneric(e1, diag2Tsmart(e2,e1)))
+		 callGeneric(e1, .diag2T.smart(e2, e1)))
 })
 
 ## Compare --> 'swap' (e.g.   e1 < e2   <==>  e2 > e1 ):
@@ -1105,7 +1668,7 @@ setMethod("Compare", signature(e1 = "triangularMatrix", e2 = "diagonalMatrix"),
 	  .Cmp.swap)
 ## '&' and "|'  are commutative:
 setMethod("Logic", signature(e1 = "triangularMatrix", e2 = "diagonalMatrix"),
-          function(e1,e2) callGeneric(e2, e1))
+          function(e1, e2) callGeneric(e2, e1))
 
 ## For almost everything else, diag* shall be treated "as sparse" :
 ## These are cheap implementations via coercion
@@ -1116,14 +1679,14 @@ setMethod("Logic", signature(e1 = "triangularMatrix", e2 = "diagonalMatrix"),
 ##
 ## ddi*:
 setMethod("Ops", signature(e1 = "ddiMatrix", e2 = "sparseMatrix"),
-	  function(e1,e2) callGeneric(diag2Tsmart(e1,e2, "d"), e2))
+	  function(e1,e2) callGeneric(.diag2T.smart(e1, e2, kind = "d"), e2))
 setMethod("Ops", signature(e1 = "sparseMatrix", e2 = "ddiMatrix"),
-	  function(e1,e2) callGeneric(e1, diag2Tsmart(e2,e1, "d")))
+	  function(e1,e2) callGeneric(e1, .diag2T.smart(e2, e1, kind = "d")))
 ## ldi*
 setMethod("Ops", signature(e1 = "ldiMatrix", e2 = "sparseMatrix"),
-	  function(e1,e2) callGeneric(diag2Tsmart(e1,e2, "l"), e2))
+	  function(e1,e2) callGeneric(.diag2T.smart(e1, e2, kind = "l"), e2))
 setMethod("Ops", signature(e1 = "sparseMatrix", e2 = "ldiMatrix"),
-	  function(e1,e2) callGeneric(e1, diag2Tsmart(e2,e1, "l")))
+	  function(e1,e2) callGeneric(e1, .diag2T.smart(e2, e1, kind = "l")))
 
 ## Ops:	 Arith	--> numeric : "dMatrix"
 ##	 Compare --> logical
@@ -1139,20 +1702,20 @@ setMethod("Arith", signature(e1 = "ddiMatrix", e2 = arg2),
 		  return(if(n) numeric() else e1)
 	      f0 <- callGeneric(0, e2)
 	      if(all0(f0)) { # remain diagonal
-		  L1 <- (le <- length(e2)) == 1L
 		  if(e1@diag == "U") {
 		      if(any((r <- callGeneric(1, e2)) != 1)) {
 			  e1@diag <- "N"
 			  e1@x[seq_len(n)] <- r # possibly recycling r
 		      } ## else: result = e1  (is "U" diag)
-		  } else {
+		  } else if(n) {
+		      L1 <- (le <- length(e2)) == 1L
 		      r <- callGeneric(e1@x, e2)
 		      ## "future fixme": if we have idiMatrix, and r is 'integer', use idiMatrix
 		      e1@x[] <- if(L1) r else r[1L + ((n+1)*(0:(n-1L))) %% le]
 		  }
 		  e1
 	      } else
-		  callGeneric(diag2tT.u(e1,e2, "d"), e2)
+		  callGeneric(.diag2tT.smart(e1, e2, kind = "d"), e2)
 	  })
 
 for(arg1 in c("numeric","logical"))
@@ -1163,20 +1726,20 @@ setMethod("Arith", signature(e1 = arg1, e2 = "ddiMatrix"),
 		  return(if(n) numeric() else e2)
 	      f0 <- callGeneric(e1, 0)
 	      if(all0(f0)) { # remain diagonal
-		  L1 <- (le <- length(e1)) == 1L
 		  if(e2@diag == "U") {
 		      if(any((r <- callGeneric(e1, 1)) != 1)) {
 			  e2@diag <- "N"
 			  e2@x[seq_len(n)] <- r # possibly recycling r
 		      } ## else: result = e2  (is "U" diag)
 		  } else {
+		      L1 <- (le <- length(e1)) == 1L
 		      r <- callGeneric(e1, e2@x)
 		      ## "future fixme": if we have idiMatrix, and r is 'integer', use idiMatrix
 		      e2@x[] <- if(L1) r else r[1L + ((n+1)*(0:(n-1L))) %% le]
 		  }
 		  e2
 	      } else
-		  callGeneric(e1, diag2tT.u(e2,e1, "d"))
+		  callGeneric(e1, .diag2tT.smart(e2, e1, kind = "d"))
 	  })
 
 ## ldi* Arith --> result numeric, potentially ddiMatrix
@@ -1189,7 +1752,6 @@ setMethod("Arith", signature(e1 = "ldiMatrix", e2 = arg2),
 			 else copyClass(e1, "ddiMatrix", c("diag", "Dim", "Dimnames"), check=FALSE))
 	      f0 <- callGeneric(0, e2)
 	      if(all0(f0)) { # remain diagonal
-		  L1 <- (le <- length(e2)) == 1L
 		  E <- copyClass(e1, "ddiMatrix", c("diag", "Dim", "Dimnames"), check=FALSE)
 		  ## storage.mode(E@x) <- "double"
 		  if(e1@diag == "U") {
@@ -1197,14 +1759,15 @@ setMethod("Arith", signature(e1 = "ldiMatrix", e2 = arg2),
 			  E@diag <- "N"
 			  E@x[seq_len(n)] <- r # possibly recycling r
 		      } ## else: result = E  (is "U" diag)
-		  } else {
+		  } else if(n) {
+		      L1 <- (le <- length(e2)) == 1L
 		      r <- callGeneric(e1@x, e2)
 		      ## "future fixme": if we have idiMatrix, and r is 'integer', use idiMatrix
 		      E@x[seq_len(n)] <- if(L1) r else r[1L + ((n+1)*(0:(n-1L))) %% le]
 		  }
 		  E
 	      } else
-		  callGeneric(diag2tT.u(e1,e2, "l"), e2)
+		  callGeneric(.diag2tT.smart(e1, e2, kind = "l"), e2)
 	  })
 
 for(arg1 in c("numeric","logical"))
@@ -1216,7 +1779,6 @@ setMethod("Arith", signature(e1 = arg1, e2 = "ldiMatrix"),
 			 else copyClass(e2, "ddiMatrix", c("diag", "Dim", "Dimnames"), check=FALSE))
 	      f0 <- callGeneric(e1, 0)
 	      if(all0(f0)) { # remain diagonal
-		  L1 <- (le <- length(e1)) == 1L
 		  E <- copyClass(e2, "ddiMatrix", c("diag", "Dim", "Dimnames"), check=FALSE)
 		  ## storage.mode(E@x) <- "double"
 		  if(e2@diag == "U") {
@@ -1224,14 +1786,15 @@ setMethod("Arith", signature(e1 = arg1, e2 = "ldiMatrix"),
 			  E@diag <- "N"
 			  E@x[seq_len(n)] <- r # possibly recycling r
 		      } ## else: result = E  (is "U" diag)
-		  } else {
+		  } else if(n) {
+		      L1 <- (le <- length(e1)) == 1L
 		      r <- callGeneric(e1, e2@x)
 		      ## "future fixme": if we have idiMatrix, and r is 'integer', use idiMatrix
 		      E@x[seq_len(n)] <- if(L1) r else r[1L + ((n+1)*(0:(n-1L))) %% le]
 		  }
 		  E
 	      } else
-		  callGeneric(e1, diag2tT.u(e2,e1, "l"))
+		  callGeneric(e1, .diag2tT.smart(e2, e1, kind = "l"))
 	  })
 
 ## ddi*: for "Ops" without "Arith": <Compare> or <Logic> --> result logical, potentially ldi
@@ -1251,7 +1814,6 @@ setMethod("Ops", signature(e1 = "ddiMatrix", e2 = arg2),
 			 else copyClass(e1, "ldiMatrix", c("diag", "Dim", "Dimnames"), check=FALSE))
 	      f0 <- callGeneric(0, e2)
 	      if(all0(f0)) { # remain diagonal
-		  L1 <- (le <- length(e2)) == 1L
 		  E <- copyClass(e1, "ldiMatrix", c("diag", "Dim", "Dimnames"), check=FALSE)
 		  ## storage.mode(E@x) <- "logical"
 		  if(e1@diag == "U") {
@@ -1259,14 +1821,15 @@ setMethod("Ops", signature(e1 = "ddiMatrix", e2 = arg2),
 			  E@diag <- "N"
 			  E@x[seq_len(n)] <- r # possibly recycling r
 		      } ## else: result = E  (is "U" diag)
-		  } else {
+		  } else if(n) {
+		      L1 <- (le <- length(e2)) == 1L
 		      r <- callGeneric(e1@x, e2)
 		      ## "future fixme": if we have idiMatrix, and r is 'integer', use idiMatrix
 		      E@x[seq_len(n)] <- if(L1) r else r[1L + ((n+1)*(0:(n-1L))) %% le]
 		  }
 		  E
 	      } else
-		  callGeneric(diag2tT.u(e1,e2, "d"), e2)
+		  callGeneric(.diag2tT.smart(e1, e2, kind = "d"), e2)
 	  })
 
 ## ldi*: for "Ops" without "Arith": <Compare> or <Logic> --> result logical, potentially ldi
@@ -1278,21 +1841,20 @@ setMethod("Ops", signature(e1 = "ldiMatrix", e2 = arg2),
                   return(if(n) logical() else e1)
 	      f0 <- callGeneric(FALSE, e2)
 	      if(all0(f0)) { # remain diagonal
-		  L1 <- (le <- length(e2)) == 1L
-
 		  if(e1@diag == "U") {
 		      if(any((r <- callGeneric(TRUE, e2)) != 1)) {
 			  e1@diag <- "N"
 			  e1@x[seq_len(n)] <- r # possibly recycling r
 		      } ## else: result = e1  (is "U" diag)
-		  } else {
+		  } else if(n) {
+		      L1 <- (le <- length(e2)) == 1L
 		      r <- callGeneric(e1@x, e2)
 		      ## "future fixme": if we have idiMatrix, and r is 'integer', use idiMatrix
 		      e1@x[] <- if(L1) r else r[1L + ((n+1)*(0:(n-1L))) %% le]
 		  }
 		  e1
 	      } else
-		  callGeneric(diag2tT.u(e1,e2, "l"), e2)
+		  callGeneric(.diag2tT.smart(e1, e2, kind = "l"), e2)
 	  })
 
 
@@ -1300,14 +1862,14 @@ setMethod("Ops", signature(e1 = "ldiMatrix", e2 = arg2),
 for(other in c("ANY", "Matrix", "dMatrix")) {
     ## ddi*:
     setMethod("Ops", signature(e1 = "ddiMatrix", e2 = other),
-	      function(e1,e2) callGeneric(diag2Tsmart(e1,e2, "d"), e2))
+	      function(e1,e2) callGeneric(.diag2T.smart(e1, e2, kind="d"), e2))
     setMethod("Ops", signature(e1 = other, e2 = "ddiMatrix"),
-	      function(e1,e2) callGeneric(e1, diag2Tsmart(e2,e1, "d")))
+	      function(e1,e2) callGeneric(e1, .diag2T.smart(e2, e1, kind="d")))
     ## ldi*:
     setMethod("Ops", signature(e1 = "ldiMatrix", e2 = other),
-	      function(e1,e2) callGeneric(diag2Tsmart(e1,e2, "l"), e2))
+	      function(e1,e2) callGeneric(.diag2T.smart(e1, e2, kind="l"), e2))
     setMethod("Ops", signature(e1 = other, e2 = "ldiMatrix"),
-	      function(e1,e2) callGeneric(e1, diag2Tsmart(e2,e1, "l")))
+	      function(e1,e2) callGeneric(e1, .diag2T.smart(e2, e1, kind="l")))
 }
 
 ## Direct subclasses of "denseMatrix": currently ddenseMatrix, ldense... :
@@ -1317,9 +1879,9 @@ dense.subCl <- local({ dM.scl <- getClass("denseMatrix")@subclasses
 dense.subCl <- paste0(c("d","l","n"), "denseMatrix")
 for(DI in diCls) {
     dMeth <- if(extends(DI, "dMatrix"))
-	function(e1,e2) callGeneric(diag2Tsmart(e1,e2, "d"), e2)
+	function(e1,e2) callGeneric(.diag2T.smart(e1, e2, kind = "d"), e2)
     else # "lMatrix", the only other kind for now
-	function(e1,e2) callGeneric(diag2Tsmart(e1,e2, "l"), e2)
+	function(e1,e2) callGeneric(.diag2T.smart(e1, e2, kind = "l"), e2)
     for(c2 in c(dense.subCl, "Matrix")) {
 	for(Fun in c("*", "&")) {
 	    setMethod(Fun, signature(e1 = DI, e2 = c2),

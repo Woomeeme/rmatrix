@@ -5,7 +5,7 @@
 
 Rboolean isValid_Csparse(SEXP x); /* -> Csparse.c */
 
-SEXP get_SuiteSparse_version() {
+SEXP get_SuiteSparse_version(void) {
     SEXP ans = allocVector(INTSXP, 3);
     int* version = INTEGER(ans);
     SuiteSparse_version(version);
@@ -22,7 +22,7 @@ static SEXP dboundSym, grow0Sym, grow1Sym, grow2Sym, maxrankSym,
     prefer_zomplexSym, prefer_upperSym, quick_return_if_not_posdefSym,
     nmethodsSym, m0_ordSym, postorderSym;
 
-void CHM_store_common() {
+void CHM_store_common(void) {
     SEXP rho = chm_common_env;
     defineVar(dboundSym, ScalarReal(c.dbound), rho);
     defineVar(grow0Sym, ScalarReal(c.grow0), rho);
@@ -47,7 +47,7 @@ void CHM_store_common() {
     defineVar(postorderSym, ScalarLogical(c.postorder), rho);
 }
 
-void CHM_restore_common() {
+void CHM_restore_common(void) {
     SEXP rho = chm_common_env, var;
 
 #define SET_AS_FROM_FRAME(_V_, _KIND_, _SYM_)	\
@@ -248,6 +248,9 @@ static void chTr2Ralloc(CHM_TR dest, CHM_TR src)
  * @return ans containing pointers to the slots of x, *unless*
  *	check_Udiag and x is unitriangular.
  */
+/* AS_CHM_SP  (x) := as_cholmod_sparse((CHM_SP)alloca(sizeof(cholmod_sparse)), x, TRUE,  FALSE)
+ * AS_CHM_SP__(x) := as_cholmod_sparse((CHM_SP)alloca(sizeof(cholmod_sparse)), x, FALSE, FALSE)
+ */
 CHM_SP as_cholmod_sparse(CHM_SP ans, SEXP x,
 			 Rboolean check_Udiag, Rboolean sort_in_place)
 {
@@ -276,7 +279,7 @@ CHM_SP as_cholmod_sparse(CHM_SP ans, SEXP x,
      * utility, but the lengths of x and i should agree. */
     ans->nzmax = LENGTH(islot);
 				/* values depending on ctype */
-    ans->x = xpt(ctype, x);
+    ans->x     = xpt  (ctype, x);
     ans->stype = stype(ctype, x);
     ans->xtype = xtype(ctype);
 
@@ -328,7 +331,7 @@ CHM_SP as_cholmod_sparse(CHM_SP ans, SEXP x,
  * optionally, free a or free both a and its the pointers to its contents.
  *
  * @param a  (cholmod_sparse) matrix to be converted
- * @param dofree 0 - don't free a; > 0 cholmod_free a; < 0 Free a
+ * @param dofree 0 - don't free a; > 0 cholmod_free a; < 0 R_Free a
  * @param uploT 0 - not triangular; > 0 upper triangular; < 0 lower
  * @param Rkind - vector type to store for a->xtype == CHOLMOD_REAL,
  *                0 - REAL; 1 - LOGICAL  [unused for other a->xtype]
@@ -363,7 +366,7 @@ SEXP chm_sparse_to_SEXP(CHM_SP a, int dofree, int uploT, int Rkind,
 #define DOFREE_MAYBE							\
     if (dofree > 0)							\
 	longi ? cholmod_l_free_sparse(&a, &cl) : cholmod_free_sparse(&a, &c); \
-    else if (dofree < 0) Free(a)
+    else if (dofree < 0) R_Free(a)
 
 
     switch(a->xtype) {
@@ -573,7 +576,7 @@ CHM_TR as_cholmod_triplet(CHM_TR ans, SEXP x, Rboolean check_Udiag)
  * optionally, free a or free both a and its the pointers to its contents.
  *
  * @param a matrix to be converted
- * @param dofree 0 - don't free a; > 0 cholmod_free a; < 0 Free a
+ * @param dofree 0 - don't free a; > 0 cholmod_free a; < 0 R_Free a
  * @param uploT 0 - not triangular; > 0 upper triangular; < 0 lower
  * @param Rkind - vector type to store for a->xtype == CHOLMOD_REAL,
  *                0 - REAL; 1 - LOGICAL
@@ -595,7 +598,7 @@ SEXP chm_triplet_to_SEXP(CHM_TR a, int dofree, int uploT, int Rkind,
 
 #define DOFREE_MAYBE					\
     if (dofree > 0) cholmod_free_triplet(&a, &c);	\
-    else if (dofree < 0) Free(a)
+    else if (dofree < 0) R_Free(a)
 
     switch(a->xtype) {
     case CHOLMOD_PATTERN:
@@ -841,7 +844,7 @@ int R_cholmod_start(CHM_CM c)
  * optionally, free a or free both a and its pointer to its contents.
  *
  * @param a matrix to be converted
- * @param dofree 0 - don't free a; > 0 cholmod_free a; < 0 Free a
+ * @param dofree 0 - don't free a; > 0 cholmod_free a; < 0 R_Free a
  * @param Rkind type of R matrix to be generated (special to this function)
  * @param dn   -- dimnames [list(.,.) or NULL;  __already__ transposed when transp is TRUE ]
  * @param transp Rboolean, if TRUE, the result must be a copy of  t(a), i.e., "a transposed"
@@ -859,7 +862,7 @@ SEXP chm_dense_to_SEXP(CHM_DN a, int dofree, int Rkind, SEXP dn, Rboolean transp
 
 #define DOFREE_de_MAYBE				\
     if (dofree > 0) cholmod_free_dense(&a, &c);	\
-    else if (dofree < 0) Free(a);
+    else if (dofree < 0) R_Free(a);
 
     switch(a->xtype) {		/* determine the class of the result */
 /* CHOLMOD_PATTERN never happens because cholmod_dense can't :
@@ -950,7 +953,7 @@ SEXP chm_dense_to_SEXP(CHM_DN a, int dofree, int Rkind, SEXP dn, Rboolean transp
  * or free both a and its pointer to its contents.
  *
  * @param a cholmod_dense structure to be converted {already REAL for original l..CMatrix}
- * @param dofree 0 - don't free a; > 0 cholmod_free a; < 0 Free a
+ * @param dofree 0 - don't free a; > 0 cholmod_free a; < 0 R_Free a
  * @param dn either R_NilValue or an SEXP suitable for the Dimnames slot.
  *
  * @return SEXP containing a copy of a as a matrix object
@@ -1005,7 +1008,7 @@ SEXP chm_dense_to_matrix(CHM_DN a, int dofree, SEXP dn)
  * or free both a and its pointer to its contents.
  *
  * @param a cholmod_dense structure to be converted
- * @param dofree 0 - don't free a; > 0 cholmod_free a; < 0 Free a
+ * @param dofree 0 - don't free a; > 0 cholmod_free a; < 0 R_Free a
  *
  * @return SEXP containing a copy of a  in the sense of  as.vector(a)
  */
@@ -1131,7 +1134,7 @@ CHM_FR as_cholmod_factor(CHM_FR ans, SEXP x) {
  * optionally, free f or free both f and its pointer to its contents.
  *
  * @param f cholmod_factor object to be converted
- * @param dofree 0 - don't free a; > 0 cholmod_free a; < 0 Free a
+ * @param dofree 0 - don't free a; > 0 cholmod_free a; < 0 R_Free a
  *
  * @return SEXP containing a copy of a
  */
@@ -1144,7 +1147,7 @@ SEXP chm_factor_to_SEXP(CHM_FR f, int dofree)
 #define DOFREE_MAYBE					\
     if(dofree) {					\
 	if (dofree > 0) cholmod_free_factor(&f, &c);	\
-	else /* dofree < 0 */ Free(f);			\
+	else /* dofree < 0 */ R_Free(f);			\
     }
 
     if(!chm_factor_ok(f)) {
@@ -1285,21 +1288,3 @@ void chm_diagN2U(CHM_SP chx, int uploT, Rboolean do_realloc)
 	cholmod_reallocate_sparse(n_nnz, chx, &c);
     return;
 }
-
-/* Placeholders; TODO: use checks above (search "CHMfactor_validate"): */
-
-SEXP CHMfactor_validate(SEXP obj) /* placeholder */
-{
-    return ScalarLogical(1);
-}
-
-SEXP CHMsimpl_validate(SEXP obj) /* placeholder */
-{
-    return ScalarLogical(1);
-}
-
-SEXP CHMsuper_validate(SEXP obj) /* placeholder */
-{
-    return ScalarLogical(1);
-}
-

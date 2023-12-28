@@ -1251,6 +1251,13 @@ csi *cs_maxtrans (const cs *A, csi seed)  /*[jmatch [0..m-1]; imatch [0..n-1]]*/
     for (i = 0 ; i < m ; i++) if (jmatch [i] >= 0) imatch [jmatch [i]] = i ;
     return (cs_idone (jimatch, (m2 < n2) ? C : NULL, w, 1)) ;
 }
+
+#if csi == int
+# define csi_MAX INT_MAX
+#else
+# error "Need INT_MAX analogue of  csi type"
+#endif
+
 /* C = A*B */
 cs *cs_multiply (const cs *A, const cs *B)
 {
@@ -1269,8 +1276,10 @@ cs *cs_multiply (const cs *A, const cs *B)
     Cp = C->p ;
     for (j = 0 ; j < n ; j++)
     {
-        if (nz + m > C->nzmax && !cs_sprealloc (C, 2*(C->nzmax)+m))
+        if (C->nzmax > (csi_MAX - m)/2 || // 2*C->nzmax + m  overflows
+            (nz + m > C->nzmax && !cs_sprealloc (C, 2*(C->nzmax)+m)))
         {
+            warning("Too many non-zeros in sparse product: Out of memory");
             return (cs_done (C, w, x, 0)) ;             /* out of memory */
         } 
         Ci = C->i ; Cx = C->x ;         /* C->i and C->x may be reallocated */
@@ -1361,35 +1370,35 @@ csi cs_print (const cs *A, csi brief)
 {
     csi p, j, m, n, nzmax, nz, *Ap, *Ai ;
     double *Ax ;
-    if (!A) { Rprintf ("(null)\n") ; return (0) ; }
+    if (!A) { printf ("(null)\n") ; return (0) ; }
     m = A->m ; n = A->n ; Ap = A->p ; Ai = A->i ; Ax = A->x ;
     nzmax = A->nzmax ; nz = A->nz ;
-    Rprintf ("CSparse Version %d.%d.%d, %s.  %s\n", CS_VER, CS_SUBVER,
+    printf ("CSparse Version %d.%d.%d, %s.  %s\n", CS_VER, CS_SUBVER,
         CS_SUBSUB, CS_DATE, CS_COPYRIGHT) ;
     if (nz < 0)
     {
-        Rprintf ("%g-by-%g, nzmax: %g nnz: %g, 1-norm: %g\n", (double) m,
+        printf ("%g-by-%g, nzmax: %g nnz: %g, 1-norm: %g\n", (double) m,
             (double) n, (double) nzmax, (double) (Ap [n]), cs_norm (A)) ;
         for (j = 0 ; j < n ; j++)
         {
-            Rprintf ("    col %g : locations %g to %g\n", (double) j, 
+            printf ("    col %g : locations %g to %g\n", (double) j, 
                 (double) (Ap [j]), (double) (Ap [j+1]-1)) ;
             for (p = Ap [j] ; p < Ap [j+1] ; p++)
             {
-                Rprintf ("      %g : %g\n", (double) (Ai [p]), Ax ? Ax [p] : 1) ;
-                if (brief && p > 20) { Rprintf ("  ...\n") ; return (1) ; }
+                printf ("      %g : %g\n", (double) (Ai [p]), Ax ? Ax [p] : 1) ;
+                if (brief && p > 20) { printf ("  ...\n") ; return (1) ; }
             }
         }
     }
     else
     {
-        Rprintf ("triplet: %g-by-%g, nzmax: %g nnz: %g\n", (double) m,
+        printf ("triplet: %g-by-%g, nzmax: %g nnz: %g\n", (double) m,
             (double) n, (double) nzmax, (double) nz) ;
         for (p = 0 ; p < nz ; p++)
         {
-            Rprintf ("    %g %g : %g\n", (double) (Ai [p]), (double) (Ap [p]),
+            printf ("    %g %g : %g\n", (double) (Ai [p]), (double) (Ap [p]),
                 Ax ? Ax [p] : 1) ;
-            if (brief && p > 20) { Rprintf ("  ...\n") ; return (1) ; }
+            if (brief && p > 20) { printf ("  ...\n") ; return (1) ; }
         }
     }
     return (1) ;
@@ -1406,12 +1415,12 @@ csi cs_pvec (const csi *p, const double *b, double *x, csi n)
 csn *cs_qr (const cs *A, const css *S)
 {
     double *Rx, *Vx, *Ax, *x,  *Beta ;
-    csi i, k, p, m, n, vnz, p1, top, m2, len, col, rnz, *s, *leftmost, *Ap, *Ai,
+    csi i, k, p, n, vnz, p1, top, m2, len, col, rnz, *s, *leftmost, *Ap, *Ai,
         *parent, *Rp, *Ri, *Vp, *Vi, *w, *pinv, *q ;
     cs *R, *V ;
     csn *N ; // the result
     if (!CS_CSC (A) || !S) return (NULL) ;
-    m = A->m ; n = A->n ; Ap = A->p ; Ai = A->i ; Ax = A->x ;
+    n = A->n ; Ap = A->p ; Ai = A->i ; Ax = A->x ;
     q = S->q ; parent = S->parent ; pinv = S->pinv ; m2 = S->m2 ;
     vnz = S->lnz ; rnz = S->unz ; leftmost = S->leftmost ;
     w = cs_malloc (m2+n, sizeof (csi)) ;            /* get csi workspace */
@@ -1529,6 +1538,11 @@ csi cs_qrsol (csi order, const cs *A, double *b)
 /* return a random permutation vector, the identity perm, or p = n-1:-1:0.
  * seed = -1 means p = n-1:-1:0.  seed = 0 means p = identity.  otherwise
  * p = random permutation.  */
+/*
+ * NB: We use R's RNG *and* its state; i.e., if seed is not -1 or 0,
+ * ==  'seed' is *not* used at all in this version of cs_randperm() !
+*/
+
 csi *cs_randperm (csi n, csi seed)
 {
     csi *p, k, j, t ;

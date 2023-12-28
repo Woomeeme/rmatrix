@@ -1,6 +1,6 @@
 \name{spMatrix}
-\alias{spMatrix}
 \title{Sparse Matrix Constructor From Triplet}
+\alias{spMatrix}
 \description{
   User friendly construction of a sparse matrix (inheriting from class
   \code{\linkS4class{TsparseMatrix}}) from the triplet representation.
@@ -9,7 +9,7 @@
   somewhat \emph{deprecated}.
 }
 \usage{
-spMatrix(nrow, ncol, i = integer(), j = integer(), x = numeric())
+spMatrix(nrow, ncol, i = integer(), j = integer(), x = double())
 }
 \arguments{
   \item{nrow, ncol}{integers specifying the desired number of rows and

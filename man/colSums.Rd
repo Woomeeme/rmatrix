@@ -1,53 +1,39 @@
 \name{colSums}
+\title{Form Row and Column Sums and Means}
+%
 \alias{colSums}
 \alias{colMeans}
 \alias{rowSums}
 \alias{rowMeans}
-\alias{colMeans,diagonalMatrix-method}
-\alias{colSums,diagonalMatrix-method}
-\alias{rowMeans,diagonalMatrix-method}
-\alias{rowSums,diagonalMatrix-method}
-\alias{colMeans,CsparseMatrix-method}
-\alias{colSums,CsparseMatrix-method}
-\alias{rowMeans,CsparseMatrix-method}
-\alias{rowSums,CsparseMatrix-method}
-\alias{colMeans,TsparseMatrix-method}
-\alias{colSums,TsparseMatrix-method}
-\alias{rowMeans,TsparseMatrix-method}
-\alias{rowSums,TsparseMatrix-method}
-\alias{colMeans,RsparseMatrix-method}
-\alias{colSums,RsparseMatrix-method}
-\alias{rowMeans,RsparseMatrix-method}
-\alias{rowSums,RsparseMatrix-method}
-\alias{colMeans,dgCMatrix-method}
-\alias{colSums,dgCMatrix-method}
-\alias{rowMeans,dgCMatrix-method}
-\alias{rowSums,dgCMatrix-method}
-\alias{colMeans,igCMatrix-method}
-\alias{colSums,igCMatrix-method}
-\alias{rowMeans,igCMatrix-method}
-\alias{rowSums,igCMatrix-method}
-\alias{colMeans,lgCMatrix-method}
-\alias{colSums,lgCMatrix-method}
-\alias{rowMeans,lgCMatrix-method}
-\alias{rowSums,lgCMatrix-method}
-\alias{colMeans,ngCMatrix-method}
-\alias{colSums,ngCMatrix-method}
-\alias{rowMeans,ngCMatrix-method}
-\alias{rowSums,ngCMatrix-method}
-% dense ones
-\alias{colMeans,denseMatrix-method}
-\alias{colSums,denseMatrix-method}
-\alias{rowMeans,denseMatrix-method}
-\alias{rowSums,denseMatrix-method}
-\alias{colMeans,ddenseMatrix-method}
-\alias{colSums,ddenseMatrix-method}
-\alias{rowMeans,ddenseMatrix-method}
-\alias{rowSums,ddenseMatrix-method}
-% NB: kept those documented in ./dgeMatrix-class.Rd
 %
-\title{Form Row and Column Sums and Means}
-% see also ~/R/D/r-devel/R/src/library/base/man/colSums.Rd
+\alias{colSums,CsparseMatrix-method}
+\alias{colSums,RsparseMatrix-method}
+\alias{colSums,TsparseMatrix-method}
+\alias{colSums,denseMatrix-method}
+\alias{colSums,diagonalMatrix-method}
+\alias{colSums,indMatrix-method}
+%
+\alias{colMeans,CsparseMatrix-method}
+\alias{colMeans,RsparseMatrix-method}
+\alias{colMeans,TsparseMatrix-method}
+\alias{colMeans,denseMatrix-method}
+\alias{colMeans,diagonalMatrix-method}
+\alias{colMeans,indMatrix-method}
+%
+\alias{rowSums,CsparseMatrix-method}
+\alias{rowSums,RsparseMatrix-method}
+\alias{rowSums,TsparseMatrix-method}
+\alias{rowSums,denseMatrix-method}
+\alias{rowSums,diagonalMatrix-method}
+\alias{rowSums,indMatrix-method}
+%
+\alias{rowMeans,CsparseMatrix-method}
+\alias{rowMeans,RsparseMatrix-method}
+\alias{rowMeans,TsparseMatrix-method}
+\alias{rowMeans,denseMatrix-method}
+\alias{rowMeans,diagonalMatrix-method}
+\alias{rowMeans,indMatrix-method}
+%
 \description{
   Form row and column sums and means for
   objects, for \code{\linkS4class{sparseMatrix}} the result may
@@ -57,19 +43,19 @@
   \code{\link{numeric}} vector.
 }
 \usage{
-colSums (x, na.rm = FALSE, dims = 1, \dots)
-rowSums (x, na.rm = FALSE, dims = 1, \dots)
-colMeans(x, na.rm = FALSE, dims = 1, \dots)
-rowMeans(x, na.rm = FALSE, dims = 1, \dots)
+colSums (x, na.rm = FALSE, dims = 1L, \dots)
+rowSums (x, na.rm = FALSE, dims = 1L, \dots)
+colMeans(x, na.rm = FALSE, dims = 1L, \dots)
+rowMeans(x, na.rm = FALSE, dims = 1L, \dots)
 
 \S4method{colSums}{CsparseMatrix}(x, na.rm = FALSE,
-        dims = 1, sparseResult = FALSE)
+        dims = 1L, sparseResult = FALSE)
 \S4method{rowSums}{CsparseMatrix}(x, na.rm = FALSE,
-        dims = 1, sparseResult = FALSE)
+        dims = 1L, sparseResult = FALSE)
 \S4method{colMeans}{CsparseMatrix}(x, na.rm = FALSE,
-        dims = 1, sparseResult = FALSE)
+        dims = 1L, sparseResult = FALSE)
 \S4method{rowMeans}{CsparseMatrix}(x, na.rm = FALSE,
-        dims = 1, sparseResult = FALSE)
+        dims = 1L, sparseResult = FALSE)
 }
 \arguments{
   \item{x}{a Matrix, i.e., inheriting from  \code{\linkS4class{Matrix}}.}

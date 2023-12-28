@@ -2,6 +2,9 @@
 #include "dtCMatrix.h"
 #include "cs_utils.h"
 
+/* MJ: no longer needed ... replacement in ./validity.c */
+#if 0
+
 #define RETURN(_CH_)   UNPROTECT(1); return (_CH_);
 
 /* This is used for *BOTH* triangular and symmetric Csparse: */
@@ -74,6 +77,8 @@ SEXP tRMatrix_validate(SEXP x)
     }
 }
 
+#endif /* MJ */
+
 SEXP dtCMatrix_matrix_solve(SEXP a, SEXP b, SEXP classed)
 {
     int cl = asLogical(classed);
@@ -103,12 +108,14 @@ SEXP dtCMatrix_matrix_solve(SEXP a, SEXP b, SEXP classed)
     SET_SLOT(ans, Matrix_DimNamesSym, dn);
     UNPROTECT(1);
     if(n >= 1 && nrhs >=1) {
-	bx = Memcpy(REAL(ALLOC_SLOT(ans, Matrix_xSym, REALSXP, n * nrhs)),
-		    REAL(cl ? GET_SLOT(b, Matrix_xSym):b), n * nrhs);
+	R_xlen_t n_ = n;
+	bx = Memcpy(REAL(ALLOC_SLOT(ans, Matrix_xSym, REALSXP, n_ * nrhs)),
+		    REAL(cl ? GET_SLOT(b, Matrix_xSym) : b),   n_ * nrhs);
 	for (j = 0; j < nrhs; j++)
-	    lo ? cs_lsolve(A, bx + n * j) : cs_usolve(A, bx + n * j);
+	    lo ? cs_lsolve(A, bx + n_ * j) : cs_usolve(A, bx + n_ * j);
     }
-    RETURN(ans);
+    UNPROTECT(1);
+    return ans;
 }
 
 SEXP dtCMatrix_sparse_solve(SEXP a, SEXP b)
@@ -118,13 +125,14 @@ SEXP dtCMatrix_sparse_solve(SEXP a, SEXP b)
     R_CheckStack();
     if (A->m != A->n || B->n < 1 || A->n < 1 || A->n != B->m)
 	error(_("Dimensions of system to be solved are inconsistent"));
-    // *before* Calloc()ing below [memory leak]! -- FIXME: 0-extent should work
+    // *before* R_Calloc()ing below [memory leak]! -- FIXME: 0-extent should work
 
+    // FIXME: xnz  == same type as *xp; must assume no integer overflow below ("10 *" and " xnz *= 2 ")
     int *xp = INTEGER(ALLOC_SLOT(ans, Matrix_pSym, INTSXP, (B->n) + 1)),
 	xnz = 10 * B->p[B->n];	/* initial estimate of nnz in x */
     int k, lo = uplo_P(a)[0] == 'L', pos = 0;
-    int    *ti = Calloc(xnz, int),     *xi = Calloc(2*A->n, int); /* for cs_reach */
-    double *tx = Calloc(xnz, double), *wrk = Calloc(  A->n, double);
+    int    *ti = R_Calloc(xnz, int),     *xi = R_Calloc(2*A->n, int); /* for cs_reach */
+    double *tx = R_Calloc(xnz, double), *wrk = R_Calloc(  A->n, double);
 
     slot_dup(ans, b, Matrix_DimSym);
 
@@ -136,8 +144,8 @@ SEXP dtCMatrix_sparse_solve(SEXP a, SEXP b)
 	xp[k + 1] = nz + xp[k];
 	if (xp[k + 1] > xnz) {
 	    while (xp[k + 1] > xnz) xnz *= 2;
-	    ti = Realloc(ti, xnz, int);
-	    tx = Realloc(tx, xnz, double);
+	    ti = R_Realloc(ti, xnz, int);
+	    tx = R_Realloc(tx, xnz, double);
 	}
 	if (lo)			/* increasing row order */
 	    for(int p = top; p < A->n; p++, pos++) {
@@ -154,17 +162,15 @@ SEXP dtCMatrix_sparse_solve(SEXP a, SEXP b)
     Memcpy(INTEGER(ALLOC_SLOT(ans, Matrix_iSym, INTSXP,  xnz)), ti, xnz);
     Memcpy(   REAL(ALLOC_SLOT(ans, Matrix_xSym, REALSXP, xnz)), tx, xnz);
 
-    Free(ti);  Free(tx);
-    Free(wrk); Free(xi);
+    R_Free(ti);  R_Free(tx);
+    R_Free(wrk); R_Free(xi);
 
     // dimnames:
     SEXP dn = PROTECT(allocVector(VECSXP, 2));
     SET_VECTOR_ELT(dn, 0, duplicate(VECTOR_ELT(GET_SLOT(a, Matrix_DimNamesSym), 1)));
     SET_VECTOR_ELT(dn, 1, duplicate(VECTOR_ELT(GET_SLOT(b, Matrix_DimNamesSym), 1)));
     SET_SLOT(ans, Matrix_DimNamesSym, dn);
-    UNPROTECT(1);
-
-    RETURN(ans);
+    UNPROTECT(2);
+    return ans;
 }
-#undef RETURN
 

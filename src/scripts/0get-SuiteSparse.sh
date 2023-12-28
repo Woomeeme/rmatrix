@@ -19,7 +19,7 @@ GH_rel=${GH_base}/releases
 GH_latest=${GH_rel}/latest
 curl --dump-header hd_latest $GH_latest > curl_out 2>&1
 # Careful: curl gives results "in MSDOS Format" with \cr\lf --> remove \r
-VER=$(sed -n -e '/^location:/{p;q}' hd_latest | tee SS_location | sed 's#.*/v\([1-9]\.[0-9]\.[0-9]\)\r#\1#')
+VER=$(sed -n -e '/^location:/{p;q}' hd_latest | tee SS_location | sed 's#.*/v\([1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)\r#\1#')
 echo "SS_location:"; cat SS_location
 echo "
   SuiteSparse version VER='$VER'
@@ -86,13 +86,14 @@ Sdir=$SS/AMD
 tar zxf $TGZ $Sdir/Source $Sdir/Include $Sdir/Lib $Sdir/README.txt
   ## install AMD documentation
 mv $Sdir/README.txt $SSdocDir/AMD.txt
-  ## remove Fortran source files and GNUMakefile
-rm $Sdir/Source/*.f $Sdir/Lib/GNUmakefile
-#(for f in $Sdir/Include/amd_internal.h $Sdir/Source/amd_global.c; do diff -ubBw ${f}.~1~ $f ; done ) | tee scripts/AMD-noprint.patch
-## 2014: no longer
-# patch -p0 < scripts/AMD-noprint.patch
-##          ---------------------
-  ## move directory *up*
+  ## remove Fortran source files
+rm $Sdir/Source/*.f
+# no longer: rm $Sdir/Lib/GNUmakefile
+echo -n "Patching AMD/Include/amd_internal.h (define NPRINT): "
+patch -p0 < scripts/AMD-noprint.patch
+##          ------------------------
+echo '[Ok]'
+ ## move directory *up*
 dd=`basename $Sdir`; rsync -auv $Sdir/ $dd/
 
 
@@ -131,6 +132,16 @@ echo " rm $dd"'/Lib/Makefile_*' ; echo
 echo "Ok, now   diff $dd/Lib/Makefile $dd/Lib/Makefile_pre :"
 diff $dd/Lib/Makefile $dd/Lib/Makefile_pre
 
+## Now patching for USE_FC_LEN_T : FCLEN FCONE
+echo -n "Patching  cholmod_blas.h : "
+patch -p0 < scripts/cholmod_blas.patch
+echo '[Ok]'
+
+echo -n "Patching  cholmod_sdmult.c : "
+patch -p0 < scripts/cholmod_sdmult.patch
+echo '[Ok]'
+
+
 ## 5) CSparse -------------------------------------------------
 Sdir=$SS/CSparse
   ## install CSparse/Source & CSparse/Include
@@ -144,8 +155,10 @@ chmod a+r $f && mv $f .
   ## Source:
 MatrixDir=`pwd`
 cd $Sdir/Source
-cat cs_*.c | sed -e '1 p' -e '/^#include/d' -e 's/\bprintf/Rprintf/g' > $MatrixDir/cs.c
+cat cs_*.c | sed -e '1 p' -e '/^#include/d' > cs.c
+cp -p cs.c $MatrixDir/cs.c
 cd $MatrixDir
+## cs.patch from  cd .. ; diff -u SuiteSparse-5.10.1/CSparse/Source/cs.c cs.c > scripts/cs.patch
 patch -p0 < scripts/cs.patch
 echo '[Ok]'
 echo -n "removing $Sdir .."

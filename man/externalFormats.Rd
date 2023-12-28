@@ -1,11 +1,14 @@
 \name{externalFormats}
+\title{Read and write external matrix formats}
+%
 \alias{readHB}
 \alias{readMM}
-% \alias{writeHB}
+%\alias{writeHB}
 \alias{writeMM}
+%
 \alias{writeMM,CsparseMatrix-method}
 \alias{writeMM,sparseMatrix-method}
-\title{Read and write external matrix formats}
+%
 \description{
   Read matrices stored in the Harwell-Boeing or MatrixMarket formats
   or write \code{\linkS4class{sparseMatrix}} objects to one of these
@@ -40,6 +43,9 @@ writeMM(obj, file, \dots)
   The Harwell-Boeing format is older and less flexible than the
   MatrixMarket format.  The function \code{writeHB} was deprecated and
   has now been removed.  Please use \code{writeMM} instead.
+
+  Note that these formats do \emph{not} know anything about
+  \code{\link{dimnames}}, hence these are dropped by \code{writeMM()}.
 
   A very simple way to export small sparse matrices \code{S}, is to use
   \code{summary(S)} which returns a \code{\link{data.frame}} with

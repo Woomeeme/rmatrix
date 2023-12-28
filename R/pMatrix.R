@@ -2,105 +2,222 @@
 
 ### NB "pMatrix" extends "indMatrix" and inherits methods -->  indMatrix.R
 
+## ~~~~ COERCIONS TO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-## The typical   'constructor' : coerce from  'index'
 setAs("integer", "pMatrix",
       function(from) {
-          nn <- names(from)
-          new("pMatrix", Dim = rep.int(length(from), 2L), Dimnames = list(nn,nn),
-              perm = from)
+          if ((n <- length(from)) == 0L)
+              return(new("pMatrix"))
+          if(anyNA(from))
+              stop("'perm' slot cannot contain NA")
+          if(min(from) < 1L)
+              stop("elements of 'perm' slot must be positive integers")
+          nms <- names(from)
+          new("pMatrix", Dim = c(n, n), Dimnames = list(nms, nms), perm = from)
       })
 
 setAs("numeric", "pMatrix",
-      function(from)
-	  if(all(from == (i <- as.integer(from)))) as(i, "pMatrix")
-	  else stop("coercion to \"pMatrix\" only works from integer numeric"))
-
-
-
-setAs("nMatrix", "pMatrix",
       function(from) {
-	  from <- as(as(from, "TsparseMatrix"), "ngTMatrix")
-	  n <- (d <- from@Dim)[1]
-	  if(n != d[2]) stop("not a square matrix")
-	  if(length(i <- from@i) != n)
-	      stop("the number of non-zero entries differs from nrow(.)")
-	  if((need.sort <- is.unsorted(i))) {
-	      ii <- sort.list(i)
-	      i <- i[ii]
-	  }
-	  if(n >= 1 && !identical(i, 0:(n - 1)))
-	      stop("must have exactly one non-zero entry per row")
-	  new("pMatrix", ## validity checking checks the 'perm' slot:
-	      perm = 1L + if(need.sort) from@j[ii] else from@j,
-	      Dim = d, Dimnames = from@Dimnames)
+          if ((n <- length(from)) == 0L)
+              return(new("pMatrix"))
+          if(anyNA(from))
+              stop("'perm' slot cannot contain NA")
+          r <- range(from)
+          if(r[2L] > .Machine$integer.max)
+              stop("elements of 'perm' slot cannot exceed 2^31-1")
+          if(r[1L] < 1 || any(from != (from.i <- as.integer(from))))
+              stop("elements of 'perm' slot must be positive integers")
+          nms <- names(from)
+         new("pMatrix", Dim = c(n, n), Dimnames = list(nms, nms), perm = from.i)
       })
 
-setAs("matrix", "pMatrix", function(from) as(as(from, "nMatrix"), "pMatrix"))
+setAs("nsparseMatrix", "pMatrix",
+      function(from) {
+          d <- from@Dim
+          if((n <- d[1L]) != d[2L])
+              stop("attempt to a coerce a non-square matrix to pMatrix")
+          from <- .sparse2g(as(from, "RsparseMatrix"))
+          p <- from@p
+          if(n > 0L && any(p != 0:n))
+              stop("matrix must have exactly one nonzero element in each row")
+          new("pMatrix", Dim = from@Dim, Dimnames = from@Dimnames,
+              perm = from@j + 1L) # validity method checks 'perm' for duplicates
+      })
 
-setMethod("solve", signature(a = "pMatrix", b = "missing"),
-	  function(a, b, ...) {
-              a@perm <- invPerm(a@perm)
-              a@Dimnames <- a@Dimnames[2:1]
-              a
+setAs("Matrix", "pMatrix",
+      function(from) as(as(from, "nsparseMatrix"), "pMatrix"))
+
+setAs("matrix", "pMatrix",
+      function(from) as(as(from, "nsparseMatrix"), "pMatrix"))
+
+
+## ~~~~ METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+## NB: pMatrix are orthogonal, hence the transpose and inverse coincide
+
+setMethod("t", signature(x = "pMatrix"),
+          function(x) {
+              x@perm <- invPerm(x@perm)
+              x@Dimnames <- x@Dimnames[2:1]
+              x
           })
 
-setMethod("solve", signature(a = "pMatrix", b = "Matrix"),
-	  function(a, b, ...) crossprod(a, b))
-setMethod("solve", signature(a = "pMatrix", b = "matrix"),
-	  function(a, b, ...) crossprod(a, b))
+## setMethod("%*%", signature(x = "pMatrix", y = "matrix"), .) # inherited
 
-setMethod("solve", signature(a = "Matrix", b = "pMatrix"),
-	  function(a, b, ...)
-	  ## Or alternatively  solve(a, as(b, "CsparseMatrix"))
-	  solve(a)[, invPerm(b@perm)])
+## setMethod("%*%", signature(x = "pMatrix", y = "Matrix"), .) # inherited
 
-
-setMethod("determinant", signature(x = "pMatrix", logarithm = "logical"),
-	  function(x, logarithm, ...) {
-	      if(any(x@Dim == 0)) mkDet(numeric(0))
-	      else mkDet(logarithm=logarithm, ldet = 0, sig = signPerm(x@perm))
-	  })
-
-
-## t(pM) is == the inverse  pM^(-1):
-setMethod("t", signature(x = "pMatrix"), function(x) solve(x))
-
+## setMethod("%*%", signature(x = "pMatrix", y = "indMatrix"), .) # inherited
 
 setMethod("%*%", signature(x = "matrix", y = "pMatrix"),
-	  function(x, y) { mmultCheck(x,y); x[, invPerm(y@perm)] })
+	  function(x, y) {
+              mmultDim(dim(x), y@Dim, type = 1L)
+              r <- .m2ge(x[, invPerm(y@perm), drop = FALSE], "d")
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
+
 setMethod("%*%", signature(x = "Matrix", y = "pMatrix"),
-	  function(x, y) { mmultCheck(x,y); x[, invPerm(y@perm)] })
-
-setMethod("%*%", signature(x = "pMatrix", y = "pMatrix"),
 	  function(x, y) {
-	      stopifnot(identical(x@Dim, y@Dim))
-	      ## FIXME: dimnames dealing: as with S3 matrix's  %*%
-	      x@perm <- x@perm[y@perm]
-	      x
-	  })
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- as(x[, invPerm(y@perm), drop = FALSE], "dMatrix")
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
 
-setMethod("crossprod", signature(x = "pMatrix", y = "matrix"),
-	  function(x, y) { mmultCheck(x,y, 2L); y[invPerm(x@perm) ,]})
-setMethod("crossprod", signature(x = "pMatrix", y = "Matrix"),
-	  function(x, y) { mmultCheck(x,y, 2L); y[invPerm(x@perm) ,]})
-setMethod("crossprod", signature(x = "pMatrix", y = "pMatrix"),
+setMethod("%*%", signature(x = "indMatrix", y = "pMatrix"),
+          function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              x@perm <- y@perm[x@perm]
+              x@Dimnames <- mmultDimnames(x@Dimnames, y@Dimnames, type = 1L)
+              x
+          })
+
+## setMethod("%&%", signature(x = "pMatrix", y = "matrix"), .) # inherited
+
+## setMethod("%&%", signature(x = "pMatrix", y = "Matrix"), .) # inherited
+
+## setMethod("%&%", signature(x = "pMatrix", y = "indMatrix"), .) # inherited
+
+setMethod("%&%", signature(x = "matrix", y = "pMatrix"),
 	  function(x, y) {
-	      stopifnot(identical(x@Dim, y@Dim))
-	      x@perm <- invPerm(x@perm)[y@perm]
-	      x
-	  })
+              mmultDim(dim(x), y@Dim, type = 1L)
+              r <- .m2ge(x[, invPerm(y@perm), drop = FALSE], "n")
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
 
-setMethod("tcrossprod", signature(x = "pMatrix", y = "pMatrix"),
+setMethod("%&%", signature(x = "Matrix", y = "pMatrix"),
 	  function(x, y) {
-	      stopifnot(identical(x@Dim, y@Dim))
-	      x@perm <- x@perm[invPerm(y@perm)]
-	      x
-	  })
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              r <- as(x[, invPerm(y@perm), drop = FALSE], "nMatrix")
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 1L)
+              r
+          })
 
+setMethod("%&%", signature(x = "indMatrix", y = "pMatrix"),
+          function(x, y) {
+              mmultDim(x@Dim, y@Dim, type = 1L)
+              x@perm <- y@perm[x@perm]
+              x@Dimnames <- mmultDimnames(x@Dimnames, y@Dimnames, type = 1L)
+              x
+          })
 
 setMethod("crossprod", signature(x = "pMatrix", y = "missing"),
-          function(x, y=NULL) Diagonal(nrow(x)))
+          function(x, y = NULL, boolArith = NA, ...) {
+              r <- new(if(isTRUE(boolArith)) "ldiMatrix" else "ddiMatrix")
+              r@Dim <- x@Dim
+              r@Dimnames <- x@Dimnames[c(2L, 2L)]
+              r@diag <- "U"
+              r
+          })
+
+setMethod("crossprod", signature(x = "pMatrix", y = "matrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, dim(y), type = 2L)
+              r <- .m2ge(y[invPerm(x@perm), , drop = FALSE],
+                         if(isTRUE(boolArith)) "n" else "d")
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 2L)
+              r
+          })
+
+setMethod("crossprod", signature(x = "pMatrix", y = "Matrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 2L)
+              r <- as(y[invPerm(x@perm), , drop = FALSE],
+                      if(isTRUE(boolArith)) "nMatrix" else "dMatrix")
+              r@Dimnames <- mmultDimnames(x@Dimnames, dimnames(y), type = 2L)
+              r
+          })
+
+setMethod("crossprod", signature(x = "pMatrix", y = "indMatrix"),
+	  function(x, y = NULL, ...) {
+              mmultDim(x@Dim, y@Dim, type = 2L)
+	      y@perm <- y@perm[invPerm(x@perm)]
+              y@Dimnames <- mmultDimnames(x@Dimnames, y@Dimnames, type = 2L)
+	      y
+	  })
+
+setMethod("crossprod", signature(x = "matrix", y = "pMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(dim(x), y@Dim, type = 2L)
+              r <- .m2ge(t(x)[, invPerm(y@perm), drop = FALSE],
+                         if(isTRUE(boolArith)) "n" else "d")
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 2L)
+              r
+          })
+
+setMethod("crossprod", signature(x = "Matrix", y = "pMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 2L)
+              r <- as(t(x)[, invPerm(y@perm), drop = FALSE],
+                      if(isTRUE(boolArith)) "nMatrix" else "dMatrix")
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 2L)
+              r
+          })
+
+## setMethod("crossprod", signature(x = "indMatrix", y = "pMatrix"), .) # inherited
+
 setMethod("tcrossprod", signature(x = "pMatrix", y = "missing"),
-          function(x, y=NULL) Diagonal(nrow(x)))
+          function(x, y = NULL, boolArith = NA, ...) {
+              r <- new(if(isTRUE(boolArith)) "ldiMatrix" else "ddiMatrix")
+              r@Dim <- x@Dim
+              r@Dimnames <- x@Dimnames[c(1L, 1L)]
+              r@diag <- "U"
+              r
+          })
+
+## setMethod("tcrossprod", signature(x = "pMatrix", y = "matrix"), .) # inherited
+
+## setMethod("tcrossprod", signature(x = "pMatrix", y = "Matrix"), .) # inherited
+
+## setMethod("tcrossprod", signature(x = "pMatrix", y = "indMatrix"), .) # inherited
+
+setMethod("tcrossprod", signature(x = "matrix", y = "pMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(dim(x), y@Dim, type = 3L)
+              r <- .m2ge(x[, y@perm, drop = FALSE],
+                         if(isTRUE(boolArith)) "n" else "d")
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 3L)
+              r
+          })
+
+setMethod("tcrossprod", signature(x = "Matrix", y = "pMatrix"),
+	  function(x, y = NULL, boolArith = NA, ...) {
+              mmultDim(x@Dim, y@Dim, type = 3L)
+              r <- as(t(x)[, y@perm, drop = FALSE],
+                      if(isTRUE(boolArith)) "nMatrix" else "dMatrix")
+              r@Dimnames <- mmultDimnames(dimnames(x), y@Dimnames, type = 3L)
+              r
+          })
+
+setMethod("tcrossprod", signature(x = "indMatrix", y = "pMatrix"),
+	  function(x, y = NULL, ...) {
+              mmultDim(x@Dim, y@Dim, type = 3L)
+              x@perm <- invPerm(y@perm)[x@perm]
+	      x@Dimnames <- mmultDimnames(x@Dimnames, y@Dimnames, type = 3L)
+	      x
+	  })
+
+
+
 
