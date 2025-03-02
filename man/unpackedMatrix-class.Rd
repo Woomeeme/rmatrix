@@ -1,15 +1,15 @@
 \name{unpackedMatrix-class}
 \title{Virtual Class \code{"unpackedMatrix"} of Unpacked Dense Matrices}
-\Rdversion{1.1}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{unpackedMatrix-class}
 %
 \alias{coerce,matrix,unpackedMatrix-method}
-\alias{coerce,numLike,unpackedMatrix-method}
-\alias{diag,unpackedMatrix-method}
-\alias{diag<-,unpackedMatrix-method}
-\alias{t,unpackedMatrix-method}
+\alias{coerce,vector,unpackedMatrix-method}
+\alias{cov2cor,unpackedMatrix-method}
 %
 \description{
   Class \code{"unpackedMatrix"} is the \emph{virtual} class of dense
@@ -19,9 +19,7 @@
   subclasses: currently \code{"[dln]geMatrix"} (unpacked general),
   \code{"[dln]syMatrix"} (unpacked symmetric), \code{"[dln]trMatrix"}
   (unpacked triangular), and subclasses of these, such as
-  \code{"\linkS4class{dpoMatrix}"},
-  \code{"\linkS4class{Cholesky}"}, and
-  \code{"\linkS4class{BunchKaufman}"}.
+  \code{"\linkS4class{dpoMatrix}"}.
 }
 \section{Slots}{
   \describe{
@@ -32,8 +30,6 @@
   Class \code{"\linkS4class{denseMatrix}"}, directly.
   Class \code{"\linkS4class{Matrix}"}, by class \code{"denseMatrix"},
   distance 2.
-  Class \code{"mMatrix"}, by class \code{"Matrix"}, distance 3.
-  Class \code{"replValueSp"}, by class \code{"Matrix"}, distance 3.
 }
 \section{Methods}{
   \describe{
@@ -61,4 +57,3 @@
 showClass("unpackedMatrix")
 showMethods(classes = "unpackedMatrix")
 }
-\keyword{classes}

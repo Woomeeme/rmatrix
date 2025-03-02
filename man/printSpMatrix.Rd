@@ -1,8 +1,14 @@
 \name{printSpMatrix}
 \title{Format and Print Sparse Matrices Flexibly}
+%
+\keyword{character}
+\keyword{print}
+\keyword{utilities}
+%
 \alias{formatSpMatrix}
 \alias{printSpMatrix}
 \alias{printSpMatrix2}
+%
 \description{
   Format and print sparse matrices flexibly.  These are the \dQuote{workhorses} used by
   the \code{\link{format}}, \code{\link{show}} and \code{\link{print}}
@@ -18,20 +24,20 @@
 formatSpMatrix(x, digits = NULL, maxp = 1e9,
                cld = getClassDef(class(x)), zero.print = ".",
                col.names, note.dropping.colnames = TRUE, uniDiag = TRUE,
-               align = c("fancy", "right"))
+               align = c("fancy", "right"), \dots)
 
 printSpMatrix(x, digits = NULL, maxp = max(100L, getOption("max.print")),
               cld = getClassDef(class(x)),
               zero.print = ".", col.names, note.dropping.colnames = TRUE,
               uniDiag = TRUE, col.trailer = "",
-              align = c("fancy", "right"))
+              align = c("fancy", "right"), \dots)
 
 printSpMatrix2(x, digits = NULL, maxp = max(100L, getOption("max.print")),
               zero.print = ".", col.names, note.dropping.colnames = TRUE,
               uniDiag = TRUE, suppRows = NULL, suppCols = NULL,
               col.trailer = if(suppCols) "......" else "",
               align = c("fancy", "right"),
-              width = getOption("width"), fitWidth = TRUE)
+              width = getOption("width"), fitWidth = TRUE, \dots)
 }
 \arguments{
   \item{x}{an \R object inheriting from class \code{\linkS4class{sparseMatrix}}.}
@@ -88,6 +94,7 @@ printSpMatrix2(x, digits = NULL, maxp = max(100L, getOption("max.print")),
   \item{fitWidth}{logical indicating if some effort should be made to
     match the desired \code{width} or temporarily enlarge that if deemed
     necessary.}
+  \item{\dots}{unused optional arguments.}
 }
 \details{
   \describe{
@@ -140,8 +147,9 @@ st <- system.time(show(M))
 sink()
 st
 
+if(interactive() || nzchar(Sys.getenv("R_MATRIX_CHECK_EXTRA")))
+## valgrind (2023-07-26) gave 10.5 sec!
 stopifnot(st[1] < 1.0) # only 0.09 on cmath-3
 options(op)
 }
 }
-\keyword{print}

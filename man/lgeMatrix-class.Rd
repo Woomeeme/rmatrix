@@ -1,27 +1,15 @@
 \name{lgeMatrix-class}
-\docType{class}
 \title{Class "lgeMatrix" of General Dense Logical Matrices}
+%
+\docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{lgeMatrix-class}
 %
-\alias{!,lgeMatrix-method}
 \alias{Arith,lgeMatrix,lgeMatrix-method}
 \alias{Compare,lgeMatrix,lgeMatrix-method}
 \alias{Logic,lgeMatrix,lgeMatrix-method}
-\alias{as.vector,lgeMatrix-method}
-\alias{coerce,lgeMatrix,dgeMatrix-method}
-\alias{coerce,lgeMatrix,lgCMatrix-method}
-\alias{coerce,lgeMatrix,lgRMatrix-method}
-\alias{coerce,lgeMatrix,lgTMatrix-method}
-\alias{coerce,lgeMatrix,lspMatrix-method}
-\alias{coerce,lgeMatrix,lsyMatrix-method}
-\alias{coerce,lgeMatrix,ltpMatrix-method}
-\alias{coerce,lgeMatrix,ltrMatrix-method}
-\alias{coerce,lgeMatrix,matrix-method}
-\alias{coerce,lgeMatrix,ngeMatrix-method}
-\alias{coerce,lgeMatrix,vector-method}
-\alias{coerce,matrix,lgeMatrix-method}
-\alias{coerce,numLike,lgeMatrix-method}
 %
 \description{This is the class of general dense \code{\link{logical}}
   matrices.
@@ -55,6 +43,10 @@ Class \code{"Matrix"}, by class \code{"ldenseMatrix"}.
   \emph{sparse} logical classes such as \code{\linkS4class{lgCMatrix}}.
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(stats, pos = "package:base", verbose = FALSE)
+library(utils, pos = "package:base", verbose = FALSE)
+}
 showClass("lgeMatrix")
 str(new("lgeMatrix"))
 set.seed(1)
@@ -63,4 +55,3 @@ set.seed(11)
 (lC <- Matrix(matrix(rnorm(28), 4,7) > 0))# a simple random lgCMatrix
 as(lM, "CsparseMatrix")
 }
-\keyword{classes}

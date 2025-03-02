@@ -2,6 +2,10 @@
 ####    aka    subsetting     and  subassignment
 ####           ~~~~~~~~~~          ~~~~~~~~~~~~~
 
+## for R_DEFAULT_PACKAGES=NULL :
+library(stats)
+library(utils)
+
 if(interactive()) {
     options(error = recover, warn = 1)
 } else if(FALSE) { ## MM / developer  testing *manually* :
@@ -13,7 +17,7 @@ if(interactive()) {
 ## ==> will also show method dispath ambiguity messages: getOption("ambiguousMethodSelection")
 
 #### suppressPackageStartupMessages(...)  as we have an *.Rout.save to Rdiff against
-stopifnot(suppressPackageStartupMessages(require(Matrix)))
+suppressPackageStartupMessages(library(Matrix))
 
 source(system.file("test-tools.R", package = "Matrix"), keep.source = FALSE)
 ##-> identical3() etc
@@ -138,7 +142,7 @@ m[1:2, 4] <- 200
 m[, 1] <- -1
 m[1:3,]
 
-m. <- .asmatrix(m)
+m. <- as(m, "matrix")
 
 ## m[ cbind(i,j) ] indexing:
 iN <- ij <- cbind(1:6, 2:3)
@@ -157,8 +161,8 @@ nsel <-(20 >= m) | (m >= 150)
 stopifnot(is(sel, "lMatrix"), is(ssel, "lsparseMatrix"),
 	  identical3(as.mat(sel.), as.mat(sel), as.mat(ssel)),
 	  identical3(!sel, !ssel, nsel), # !<sparse> is typically dense
-	  identical3(m[ sel],  m[ ssel], .asmatrix(m)[.asmatrix( ssel)]),
-	  identical3(m[!sel],  m[!ssel], .asmatrix(m)[.asmatrix(!ssel)])
+	  identical3(m[ sel],  m[ ssel], as(m, "matrix")[as( ssel, "matrix")]),
+	  identical3(m[!sel],  m[!ssel], as(m, "matrix")[as(!ssel, "matrix")])
 	  )
 showProc.time()
 
@@ -333,10 +337,10 @@ if(doExtras) {### {was ./AAA_index.R, MM-only}
     show(N1 <- t(N <- mkN1(N0)))    # transpose {for display reasons}
     C1 <- t(C <- mkN1(as(N0,"CsparseMatrix")))
     stopifnot(all(C == N))
-    assert.EQ.mat(C, mkN1(.asmatrix(N0)))
+    assert.EQ.mat(C, mkN1(as(N0, "matrix")))
 
     C. <- C1
-    show(N <- N1) ; n <- .asmatrix(N); str(N)
+    show(N <- N1) ; n <- as(N, "matrix"); str(N)
     sort(i <- c(6,8,19,11,21,20,10,7,12,9,5,18,17,22,13))## == c(5:13, 17:22))
     sort(j <- c(3,8,6,15,10,4,14,13,16,2,11,17,7,5))## == c(2:8, 10:11, 13:17)
     val <- v.l <- 5*c(0,6,0,7,0,0,8:9, 0,0)
@@ -512,16 +516,16 @@ diag(B.) <- 10 * diag(B.)
 diag(B.[,-1]) <- 5* diag(B.[,-1])
 diag(B.[-1,]) <- 4* diag(B.[-1,]) ; B.
 C <- B.; C[,2] <- C[,2];  C[1,] <- C[1,]; C[2:3,2:1] <- C[2:3,2:1]
-stopifnot(identical(unname(.asmatrix(A)),
+stopifnot(identical(unname(as(A, "matrix")),
 		    local({a <- matrix(0,4,3); a[c(1,2,1), 2] <-  1 ; a})),
-	  identical(unname(.asmatrix(B)),
+	  identical(unname(as(B, "matrix")),
 		    local({a <- matrix(0,4,3); a[c(1,2,1), 2] <- 1:3; a})),
 	  identical(C, drop0(B.)))
 ## <sparse>[<logicalSparse>] <- v  failed in the past
 T <- as(C,"TsparseMatrix"); C. <- C
 T[T>0] <- 21
 C[C>0] <- 21
-a. <- local({a <- .asmatrix(C.); a[a>0] <- 21; a})
+a. <- local({a <- as(C., "matrix"); a[a>0] <- 21; a})
 assert.EQ.mat(C, a.)
 stopifnot(identical(C, as(T, "CsparseMatrix")))
 
@@ -604,8 +608,8 @@ stopifnot(diag(tr1) == 100)# failed when 'diag<-' did not recycle
 assert.EQ.mat(m2[1:3,],    diag(5)[1:3,])
 assert.EQ.mat(m2[,c(4,1)], diag(5)[,c(4,1)])
 stopifnot(identical(m2[1:3,], as(m1[1:3,], "CsparseMatrix")),
-          identical(uniqTsparse(m1[, c(4,2)]),
-                    uniqTsparse(as(m2[, c(4,2)], "TsparseMatrix")))
+          identical(asUniqueT(m1[, c(4,2)]),
+                    asUniqueT(m2[, c(4,2)]))
           )## failed in 0.9975-11
 
 ## 0-dimensional diagonal - subsetting ----------------------------
@@ -623,14 +627,14 @@ stopifnot(exprs = {
     identical(m00[FALSE], tC0[FALSE])#    ditto
     ##
     identical(D0, D0[0,0]) # used to fail --> subCsp_ij  (..)
-    identical(D0, D0[ ,0]) #  (ditto)     --> subCsp_cols(..)
-    identical(D0, D0[0, ]) #     "        --> subCsp_rows(..)
+    identical(gC0, D0[, 0]) #  (ditto)     --> subCsp_cols(..)
+    identical(gC0, D0[0, ]) #     "        --> subCsp_rows(..)
     identical(D0, D0[,])          # (worked already)
     identical(m00[ 0 ],  D0[ 0 ] )#      ditto
     identical(m00[TRUE ], D0[TRUE ])#      "
     identical(m00[FALSE], D0[FALSE])#      "
     ##
-    identical(tC0.,tC0[0,0]) # failed --> subCsp_ij  (..)
+    identical(tC0, tC0[0,0]) # failed --> subCsp_ij  (..)
     identical(gC0, tC0[ ,0]) #   "    --> subCsp_cols(..)
     identical(gC0, tC0[0, ]) #   "    --> subCsp_rows(..)
     identical(tC0, tC0[,])   # (worked already)
@@ -660,7 +664,7 @@ stopifnot(exprs = {
     vapply(exR, inherits, logical(1), what = "error")
     !englishMsgs ||
     unique( vapply(exR, `[[`, "<msg>", "message")
-           ) == "logical subscript too long (1, should be 0)"
+           ) == "logical subscript too long"
 })
 
 
@@ -856,7 +860,7 @@ mt
 mc[1,4] <- -99 ; stopifnot(mc[1,4] == -99)
 mc[1,4] <-  00 ; stopifnot(mc[1,4] ==  00)
 mc[1,4] <- -99 ; stopifnot(mc[1,4] == -99)
-mc[1:2,4:3] <- 4:1; stopifnot(.asmatrix(mc[1:2,4:3]) == 4:1)
+mc[1:2,4:3] <- 4:1; stopifnot(as(mc[1:2,4:3], "matrix") == 4:1)
 
 mc[-1, 3] <- -2:1 # 0 should not be entered; 'value' recycled
 mt[-1, 3] <- -2:1
@@ -929,13 +933,13 @@ H[i,j] <- 0
 (H. <- round(as(H, "sparseMatrix"), 3)[ , 2:7])
 Hc. <- Hc
 Hc.[i,j] <- 0 ## now "works", but setting "non-structural" 0s
-stopifnot(.asmatrix(Hc.[i,j]) == 0)
+stopifnot(as(Hc.[i,j], "matrix") == 0)
 Hc.[, 1:6]
 
 ## an example that failed for a long time
 sy3 <- new("dsyMatrix", Dim = as.integer(c(2, 2)), x = c(14, -1, 2, -7))
 checkMatrix(dm <- kronecker(Diagonal(2), sy3))# now sparse with new kronecker
-dm <- Matrix(.asmatrix(dm))# -> "dsyMatrix"
+dm <- Matrix(as(dm, "matrix"))# -> "dsyMatrix"
 (s2 <- as(dm, "sparseMatrix"))
 checkMatrix(st <- as(s2, "TsparseMatrix"))
 stopifnot(is(s2, "symmetricMatrix"),
@@ -1189,7 +1193,7 @@ assert.EQ.mat(x1, x)
 
 i <- 4:7
 x1 <- x0; x1[cbind(i, i+10)] <- i^2
-x2 <- x0; x2[cbind(i, i+10)] <- .asmatrix(i^2)
+x2 <- x0; x2[cbind(i, i+10)] <- as(i^2, "matrix")
 ## failed: nargs() = 4 ... please report
 
 class(x1) # was "dgT", now "dgC"
@@ -1239,9 +1243,7 @@ sv2 <- as(sv, "isparseVector")
 stopifnot(validObject(sv), validObject(sv2), identical(sv., sv2),
           sv == sv.)
 n0 <- sv. != 0 # -> is "lsparseV.."
-if(FALSE)
-    debug(Matrix:::replSPvec) ## --> ../R/sparseVector.R : replSPvec()
-##
+
 sv [n0] <- sv [n0]
 sv.[n0] <- sv.[n0] # gave error
 stopifnot(identical(sv , sv0),
@@ -1272,7 +1274,7 @@ x[i] <- y1     ; validObject(x[i]) # TRUE
 N <- x[i] + y2 ; validObject( N  ) # TRUE
 x[i] <- N ## <== bug was here ..
 validObject(x)
-## gave 'Error' invalid ..“dsparseVector”.. 'i' must be sorted strictly increasingly
+## gave 'Error' invalid .."dsparseVector".. 'i' must be sorted strictly increasingly
 stopifnot(all.equal(x[i] ,  y1+y2, tolerance=0),
 		    x[i] == y1+y2)
 showProc.time()
@@ -1351,3 +1353,34 @@ ni <- is.na(gC)
 li <- as(ni, "lMatrix")
 stopifnot(identical(gC[ ni], gC[ li]),
           identical(gC[!ni], gC[!li]))
+
+## Dispatch thinko in Matrix <= 1.5-4
+R0 <- R. <-
+new("dgRMatrix",
+    Dim = c(12L, 12L),
+    p = c(0L, 0L, 4L, 5L, 7L, 8L, 9L, 10L, 11L, 12L, 13L, 14L, 16L),
+    j = c(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 7L, 8L, 4L, 7L, 9L, 9L, 10L, 11L),
+    x = as.double(1:16))
+R.[1:2, ] <- R.[1:2, ] # was an error
+stopifnot(identical(R0, as(R., "RsparseMatrix")))
+
+## Didn't drop dimensions ...
+stopifnot(identical(t(as(1:6,"CsparseMatrix"))[TRUE, ], as.double(1:6)))
+
+## Was briefly wrong prior to Matrix 1.6-0
+set.seed(0)
+S <- new("dsyMatrix", Dim = c(4L, 4L), x = rnorm(16L))
+Sii <- S[4:1, 4:1]
+stopifnot(exprs = {
+    is(Sii, "dsyMatrix")
+    Sii@uplo == "L"
+    identical(as(Sii, "matrix"), as(S, "matrix")[4:1, 4:1])
+})
+
+## Bug #6839: regression in <.s[CT]Matrix>[<logical>] in Matrix 1.6-z
+x <- new("dsCMatrix", Dim = c(4L, 4L),
+         p = cumsum(0:4), i = sequence(1:4) - 1L, x = as.double(1:10))
+i <- c(TRUE, FALSE)
+xi <- as(x, "matrix")[i]
+for(cl in paste0(c("C", "R", "T"), "sparseMatrix"))
+    stopifnot(identical(as(x, cl)[i], xi))

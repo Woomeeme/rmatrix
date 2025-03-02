@@ -1,6 +1,9 @@
 \name{dMatrix-class}
 \title{(Virtual) Class "dMatrix" of "double" Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{dMatrix-class}
 \alias{lMatrix-class}
@@ -14,15 +17,13 @@
 \alias{Logic,dMatrix,sparseVector-method}
 \alias{Logic,logical,dMatrix-method}
 \alias{Logic,numeric,dMatrix-method}
-\alias{Math2,dMatrix-method}
 \alias{Ops,dMatrix,dMatrix-method}
 \alias{Ops,dMatrix,ddiMatrix-method}
 \alias{Ops,dMatrix,lMatrix-method}
 \alias{Ops,dMatrix,ldiMatrix-method}
 \alias{Ops,dMatrix,nMatrix-method}
 \alias{coerce,matrix,dMatrix-method}
-\alias{coerce,numLike,dMatrix-method}
-\alias{zapsmall,dMatrix-method}
+\alias{coerce,vector,dMatrix-method}
 %
 \alias{Arith,lMatrix,numeric-method}
 \alias{Arith,lMatrix,logical-method}
@@ -42,10 +43,8 @@
 \alias{Ops,lMatrix,nMatrix-method}
 \alias{Ops,lMatrix,numeric-method}
 \alias{Ops,numeric,lMatrix-method}
-\alias{Summary,lMatrix-method}
-\alias{coerce,lMatrix,dgCMatrix-method}
 \alias{coerce,matrix,lMatrix-method}
-\alias{coerce,numLike,lMatrix-method}
+\alias{coerce,vector,lMatrix-method}
 %
 \description{
   The \code{dMatrix} class is a virtual class contained by all actual
@@ -87,11 +86,8 @@
   }
   The following methods are also defined for all double matrices:
   \describe{
-    \item{coerce}{\code{signature(from = "dMatrix", to = "matrix")}: ... }
-    %
     \item{expm}{\code{signature(x = "dMatrix")}: computes the
       \emph{\dQuote{Matrix Exponential}}, see \code{\link{expm}}.}
-    \item{zapsmall}{\code{signature(x = "dMatrix")}: ... }
   }
   The following methods are defined for all logical matrices:
   \describe{
@@ -118,6 +114,9 @@
   more efficient than) \code{zapsmall(x, digits=10)}.
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(stats, pos = "package:base", verbose = FALSE)
+}
  showClass("dMatrix")
 
  set.seed(101)
@@ -126,5 +125,3 @@
  (M. <- zapsmall(M))
  table(as.logical(M. == 0))
 }
-\keyword{classes}
-\keyword{algebra}

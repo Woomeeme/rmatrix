@@ -1,9 +1,12 @@
 \name{rleDiff-class}
 \title{Class "rleDiff" of  rle(diff(.))  Stored Vectors}
+%
 \docType{class}
-\Rdversion{1.1}
+\keyword{classes}
+%
 \alias{rleDiff-class}
 \alias{show,rleDiff-method}
+%
 \description{
   Class \code{"rleDiff"} is for compactly storing long vectors
   which mainly consist of \emph{linear} stretches.  For such a vector
@@ -42,4 +45,3 @@ showClass("rleDiff")
 ab <- c(abIseq(2, 100), abIseq(20, -2))
 ab@rleD  # is "rleDiff"
 }
-\keyword{classes}

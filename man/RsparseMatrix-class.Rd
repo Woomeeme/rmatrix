@@ -1,21 +1,14 @@
 \name{RsparseMatrix-class}
 \title{Class "RsparseMatrix" of Sparse Matrices in Row-compressed Form}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{RsparseMatrix-class}
 %
-\alias{as.vector,RsparseMatrix-method}
-\alias{coerce,RsparseMatrix,CsparseMatrix-method}
-\alias{coerce,RsparseMatrix,TsparseMatrix-method}
-\alias{coerce,RsparseMatrix,denseMatrix-method}
-\alias{coerce,RsparseMatrix,dgeMatrix-method}
-\alias{coerce,RsparseMatrix,generalMatrix-method}
-\alias{coerce,RsparseMatrix,matrix-method}
-\alias{coerce,RsparseMatrix,packedMatrix-method}
-\alias{coerce,RsparseMatrix,unpackedMatrix-method}
-\alias{coerce,RsparseMatrix,vector-method}
 \alias{coerce,matrix,RsparseMatrix-method}
-\alias{coerce,numLike,RsparseMatrix-method}
+\alias{coerce,vector,RsparseMatrix-method}
 \alias{diag,RsparseMatrix-method}
 \alias{diag<-,RsparseMatrix-method}
 \alias{t,RsparseMatrix-method}
@@ -62,4 +55,3 @@
 \examples{
 showClass("RsparseMatrix")
 }
-\keyword{classes}

@@ -1,6 +1,9 @@
 \name{CsparseMatrix-class}
 \title{Class "CsparseMatrix" of Sparse Matrices in Column-compressed Form}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{CsparseMatrix-class}
 %
@@ -9,22 +12,10 @@
 \alias{Arith,numeric,CsparseMatrix-method}
 \alias{Compare,CsparseMatrix,CsparseMatrix-method}
 \alias{Logic,CsparseMatrix,CsparseMatrix-method}
-\alias{Math,CsparseMatrix-method}
-\alias{as.vector,CsparseMatrix-method}
-\alias{coerce,CsparseMatrix,RsparseMatrix-method}
-\alias{coerce,CsparseMatrix,TsparseMatrix-method}
-\alias{coerce,CsparseMatrix,denseMatrix-method}
-\alias{coerce,CsparseMatrix,generalMatrix-method}
-\alias{coerce,CsparseMatrix,matrix-method}
-\alias{coerce,CsparseMatrix,packedMatrix-method}
-\alias{coerce,CsparseMatrix,sparseVector-method}
-\alias{coerce,CsparseMatrix,unpackedMatrix-method}
-\alias{coerce,CsparseMatrix,vector-method}
 \alias{coerce,matrix,CsparseMatrix-method}
-\alias{coerce,numLike,CsparseMatrix-method}
+\alias{coerce,vector,CsparseMatrix-method}
 \alias{diag,CsparseMatrix-method}
 \alias{diag<-,CsparseMatrix-method}
-\alias{log,CsparseMatrix-method}
 \alias{t,CsparseMatrix-method}
 %
 \alias{.validateCsparse}
@@ -80,8 +71,6 @@ Class \code{"Matrix"}, by class \code{"sparseMatrix"}.
     \item{coerce}{\code{signature(from = "CsparseMatrix", to = "TsparseMatrix")}: ... }
     \item{coerce}{\code{signature(from = "CsparseMatrix", to = "denseMatrix")}: ... }
     \item{coerce}{\code{signature(from = "CsparseMatrix", to = "matrix")}: ... }
-    \item{coerce}{\code{signature(from = "CsparseMatrix", to = "lsparseMatrix")}: ... }
-    \item{coerce}{\code{signature(from = "CsparseMatrix", to = "nsparseMatrix")}: ... }
     \item{coerce}{\code{signature(from = "TsparseMatrix", to = "CsparseMatrix")}: ... }
     \item{coerce}{\code{signature(from = "denseMatrix", to = "CsparseMatrix")}: ... }
     \item{diag}{\code{signature(x = "CsparseMatrix")}: ... }
@@ -121,4 +110,3 @@ getClass("CsparseMatrix")
 ## The common validity check function (based on C code):
 getValidity(getClass("CsparseMatrix"))
 }
-\keyword{classes}

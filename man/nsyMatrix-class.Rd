@@ -1,31 +1,12 @@
 \name{nsyMatrix-class}
 \title{Symmetric Dense Nonzero-Pattern Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
-\alias{nspMatrix-class}
 \alias{nsyMatrix-class}
-%
-\alias{!,nspMatrix-method}
-\alias{coerce,matrix,nspMatrix-method}
-\alias{coerce,nspMatrix,dspMatrix-method}
-\alias{coerce,nspMatrix,lspMatrix-method}
-\alias{coerce,nspMatrix,ngeMatrix-method}
-\alias{coerce,nspMatrix,nsCMatrix-method}
-\alias{coerce,nspMatrix,nsRMatrix-method}
-\alias{coerce,nspMatrix,nsTMatrix-method}
-\alias{coerce,nspMatrix,nsyMatrix-method}
-\alias{coerce,nspMatrix,ntpMatrix-method}
-%
-\alias{!,nsyMatrix-method}
-\alias{coerce,matrix,nsyMatrix-method}
-\alias{coerce,nsyMatrix,dsyMatrix-method}
-\alias{coerce,nsyMatrix,lsyMatrix-method}
-\alias{coerce,nsyMatrix,ngeMatrix-method}
-\alias{coerce,nsyMatrix,nsCMatrix-method}
-\alias{coerce,nsyMatrix,nsRMatrix-method}
-\alias{coerce,nsyMatrix,nsTMatrix-method}
-\alias{coerce,nsyMatrix,nspMatrix-method}
-\alias{coerce,nsyMatrix,ntrMatrix-method}
+\alias{nspMatrix-class}
 %
 \description{
   The \code{"nsyMatrix"} class is the class of symmetric, dense nonzero-pattern
@@ -60,7 +41,7 @@
 \section{Methods}{
   Currently, mainly \code{\link{t}()} and coercion methods (for
   \code{\link{as}(.)}; use, e.g.,
-  \code{\link{showMethods}(class="dsyMatrix")} for details.
+  \code{\link{showMethods}(class="nsyMatrix")} for details.
 }
 %\references{}
 %\author{}
@@ -69,12 +50,14 @@
   \code{\link[base]{t}}
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 (s0 <- new("nsyMatrix"))
 
 (M2 <- Matrix(c(TRUE, NA, FALSE, FALSE), 2, 2)) # logical dense (ltr)
-(sM <- M2 & t(M2)) # "lge"
-class(sM <- as(sM, "nMatrix"))         # -> "nge"
-     (sM <- as(sM, "symmetricMatrix")) # -> "nsy"
-str  (sM <- as(sM, "packedMatrix"))    # -> "nsp": packed symmetric
+(sM <- M2 & t(M2))                       # -> "lge"
+class(sM <- as(sM, "nMatrix"))           # -> "nge"
+     (sM <- as(sM, "symmetricMatrix"))   # -> "nsy"
+str(sM <- as(sM, "packedMatrix")) # -> "nsp", i.e., packed symmetric
 }
-\keyword{classes}

@@ -1,8 +1,12 @@
 \name{ldiMatrix-class}
 \title{Class "ldiMatrix" of Diagonal Logical Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{ldiMatrix-class}
+\alias{ndiMatrix-class} % for now
 %
 \alias{!,ldiMatrix-method}
 \alias{\%\%,ldiMatrix,Matrix-method}
@@ -21,7 +25,6 @@
 \alias{*,ldiMatrix,ddenseMatrix-method}
 \alias{*,ldiMatrix,ldenseMatrix-method}
 \alias{*,ldiMatrix,ndenseMatrix-method}
-\alias{-,ldiMatrix,missing-method}
 \alias{/,ldiMatrix,Matrix-method}
 \alias{/,ldiMatrix,ddenseMatrix-method}
 \alias{/,ldiMatrix,ldenseMatrix-method}
@@ -36,33 +39,38 @@
 \alias{Ops,ldiMatrix,dMatrix-method}
 \alias{Ops,ldiMatrix,ddiMatrix-method}
 \alias{Ops,ldiMatrix,ldiMatrix-method}
+\alias{Ops,ldiMatrix,ndiMatrix-method}
 \alias{Ops,ldiMatrix,logical-method}
 \alias{Ops,ldiMatrix,numeric-method}
 \alias{Ops,ldiMatrix,sparseMatrix-method}
-\alias{Summary,ldiMatrix-method}
-\alias{as.logical,ldiMatrix-method}
-\alias{cbind2,ldiMatrix,atomicVector-method}
-\alias{cbind2,ldiMatrix,matrix-method}
-\alias{cbind2,matrix,ldiMatrix-method}
-\alias{coerce,ldiMatrix,ddiMatrix-method}
-\alias{coerce,ldiMatrix,lgCMatrix-method}
-\alias{coerce,ldiMatrix,lgRMatrix-method}
-\alias{coerce,ldiMatrix,lgTMatrix-method}
-\alias{coerce,ldiMatrix,lgeMatrix-method}
-\alias{coerce,ldiMatrix,lsCMatrix-method}
-\alias{coerce,ldiMatrix,lsRMatrix-method}
-\alias{coerce,ldiMatrix,lsTMatrix-method}
-\alias{coerce,ldiMatrix,lsyMatrix-method}
-\alias{coerce,ldiMatrix,ltCMatrix-method}
-\alias{coerce,ldiMatrix,ltRMatrix-method}
-\alias{coerce,ldiMatrix,ltTMatrix-method}
-\alias{coerce,ldiMatrix,ltrMatrix-method}
-\alias{prod,ldiMatrix-method}
-\alias{rbind2,ldiMatrix,atomicVector-method}
-\alias{rbind2,ldiMatrix,matrix-method}
-\alias{rbind2,matrix,ldiMatrix-method}
-\alias{sum,ldiMatrix-method}
 \alias{which,ldiMatrix-method}
+%
+\alias{!,ndiMatrix-method}
+\alias{\%\%,ndiMatrix,Matrix-method}
+\alias{\%\%,ndiMatrix,ddenseMatrix-method}
+\alias{\%\%,ndiMatrix,ldenseMatrix-method}
+\alias{\%\%,ndiMatrix,ndenseMatrix-method}
+\alias{\%/\%,ndiMatrix,Matrix-method}
+\alias{\%/\%,ndiMatrix,ddenseMatrix-method}
+\alias{\%/\%,ndiMatrix,ldenseMatrix-method}
+\alias{\%/\%,ndiMatrix,ndenseMatrix-method}
+\alias{&,ndiMatrix,Matrix-method}
+\alias{&,ndiMatrix,ddenseMatrix-method}
+\alias{&,ndiMatrix,ldenseMatrix-method}
+\alias{&,ndiMatrix,ndenseMatrix-method}
+\alias{*,ndiMatrix,Matrix-method}
+\alias{*,ndiMatrix,Matrix-method}
+\alias{*,ndiMatrix,ddenseMatrix-method}
+\alias{*,ndiMatrix,ldenseMatrix-method}
+\alias{*,ndiMatrix,ndenseMatrix-method}
+\alias{/,ndiMatrix,Matrix-method}
+\alias{/,ndiMatrix,ddenseMatrix-method}
+\alias{/,ndiMatrix,ldenseMatrix-method}
+\alias{/,ndiMatrix,ndenseMatrix-method}
+\alias{Ops,ndiMatrix,ddiMatrix-method}
+\alias{Ops,ndiMatrix,ldiMatrix-method}
+\alias{Ops,ndiMatrix,ndiMatrix-method}
+\alias{which,ndiMatrix-method}
 %
 \description{The class \code{"ldiMatrix"} of logical diagonal matrices.
 %% FIXME add more
@@ -84,7 +92,7 @@
 \section{Extends}{
   Class \code{"\linkS4class{diagonalMatrix}"} and
   class \code{"\linkS4class{lMatrix}"}, directly.
-
+  
   Class \code{"\linkS4class{sparseMatrix}"}, by class \code{"diagonalMatrix"}.
 }
 % \section{Methods}{
@@ -96,11 +104,13 @@
   \code{\linkS4class{diagonalMatrix}}; function \code{\link{Diagonal}}.
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 (lM <- Diagonal(x = c(TRUE,FALSE,FALSE)))
 str(lM)#> gory details (slots)
 
 crossprod(lM) # numeric
-(nM <- as(lM, "nMatrix"))# -> sparse (not formally ``diagonal'')
-crossprod(nM) # logical sparse
+(nM <- as(lM, "nMatrix"))
+crossprod(nM) # pattern sparse
 }
-\keyword{classes}

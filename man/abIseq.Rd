@@ -1,9 +1,12 @@
 \name{abIseq}
 \title{Sequence Generation of "abIndex", Abstract Index Vectors}
-\Rdversion{1.1}
+%
+\keyword{manip}
+\keyword{utilities}
 %
 \alias{abIseq}
 \alias{abIseq1}
+%
 \alias{c.abIndex}
 %
 \description{
@@ -63,5 +66,3 @@ abIseq(1, 50, by = 3)
 
 %% FIXME: add / exchange with ../tests/abIndex-tsts.R
 }
-\keyword{manip}
-\keyword{classes}

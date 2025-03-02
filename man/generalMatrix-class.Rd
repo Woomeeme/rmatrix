@@ -1,11 +1,17 @@
 \name{generalMatrix-class}
 \title{Class "generalMatrix" of General Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{generalMatrix-class}
 %
+\alias{coerce,generalMatrix,packedMatrix-method}
 \alias{coerce,matrix,generalMatrix-method}
-\alias{coerce,numLike,generalMatrix-method}
+\alias{coerce,vector,generalMatrix-method}
+\alias{dimnames<-,generalMatrix,NULL-method}
+\alias{dimnames<-,generalMatrix,list-method}
 %
 \description{
   Virtual class of \dQuote{general} matrices; i.e., matrices
@@ -15,27 +21,27 @@
 \section{Objects from the Class}{A virtual Class: No objects may be created from it.}
 \section{Slots}{
   \describe{
-    \item{\code{factors}}{,}
-    \item{\code{Dim}}{,}
-    \item{\code{Dimnames}:}{all slots inherited from
-      \code{\linkS4class{compMatrix}}; see its description.}
+    \item{\code{Dim, Dimnames}}{inherited from virtual class
+      \code{\linkS4class{Matrix}}.}
+    \item{\code{factors}}{a list of
+      \code{\linkS4class{MatrixFactorization}} objects caching
+      factorizations of the matrix.  Typically, it is initialized
+      as an empty list and updated \dQuote{automagically} whenever
+      a factorization is computed.}
   }
 }
 \section{Extends}{
-  Class \code{"compMatrix"}, directly.
-  Class \code{"Matrix"}, by class \code{"compMatrix"}.
+  Class \code{"Matrix"}, directly.
 }
 % \section{Methods}{
 % No methods defined with class "generalMatrix" in the signature.
 % }
 \seealso{
-  Classes \code{\linkS4class{compMatrix}}, and the non-general virtual
-  classes:
+  Virtual classes
   \code{\linkS4class{symmetricMatrix}},
-  \code{\linkS4class{triangularMatrix}},
+  \code{\linkS4class{triangularMatrix}}, and
   \code{\linkS4class{diagonalMatrix}}.
 }
 % \examples{
 % ##---- Should be DIRECTLY executable !! ----
 % }
-\keyword{classes}

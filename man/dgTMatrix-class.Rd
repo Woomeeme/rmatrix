@@ -1,21 +1,13 @@
 \name{dgTMatrix-class}
 \title{Sparse matrices in triplet form}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{dgTMatrix-class}
 %
 \alias{+,dgTMatrix,dgTMatrix-method}
-\alias{coerce,dgTMatrix,dgCMatrix-method}
-\alias{coerce,dgTMatrix,dgRMatrix-method}
-\alias{coerce,dgTMatrix,dgeMatrix-method}
-\alias{coerce,dgTMatrix,dsCMatrix-method}
-\alias{coerce,dgTMatrix,dsTMatrix-method}
-\alias{coerce,dgTMatrix,dtCMatrix-method}
-\alias{coerce,dgTMatrix,dtTMatrix-method}
-\alias{coerce,dgTMatrix,lgTMatrix-method}
-\alias{coerce,dgTMatrix,ngTMatrix-method}
-\alias{coerce,matrix,dgTMatrix-method}
-\alias{coerce,numLike,dgTMatrix-method}
 \alias{determinant,dgTMatrix,logical-method}
 %
 \description{The \code{"dgTMatrix"} class is the class of sparse
@@ -46,19 +38,6 @@
 \section{Methods}{
   \describe{
     \item{+}{\code{signature(e1 = "dgTMatrix", e2 = "dgTMatrix")}}
-    \item{coerce}{\code{signature(from = "dgTMatrix", to = "dgCMatrix")}}
-    \item{coerce}{\code{signature(from = "dgTMatrix", to = "dgeMatrix")}}
-    \item{coerce}{\code{signature(from = "dgTMatrix", to = "matrix")},
-      and typically coercion methods for more specific signatures, we
-      are not mentioning here.
-
-      Note that these are not guaranteed to continue to exist,
-      but rather you should use calls like \code{as(x,
-	"CsparseMatrix")}, \code{as(x, "generalMatrix")},
-      \code{as(x, "dMatrix")}, i.e. coercion to higher level virtual classes.}
-    \item{coerce}{\code{signature(from = "matrix", to = "dgTMatrix")},
-      (direct coercion from tradition matrix).}
-
     \item{image}{\code{signature(x = "dgTMatrix")}: plots an image of
       \code{x} using the \code{\link[lattice]{levelplot}} function}
     \item{t}{\code{signature(x = "dgTMatrix")}: returns the transpose of
@@ -78,15 +57,18 @@
 
   However this means that a matrix typically can be stored in more than
   one possible \code{"\linkS4class{TsparseMatrix}"} representations.
-  Use \code{\link{uniqTsparse}()} in order to ensure uniqueness of the
+  Use \code{\link{asUniqueT}()} in order to ensure uniqueness of the
   internal representation of such a matrix.
 }
 \seealso{
   Class \code{\linkS4class{dgCMatrix}} or the superclasses
   \code{\linkS4class{dsparseMatrix}} and
-  \code{\linkS4class{TsparseMatrix}}; \code{\link{uniqTsparse}}.
+  \code{\linkS4class{TsparseMatrix}}; \code{\link{asUniqueT}}.
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 m <- Matrix(0+1:28, nrow = 4)
 m[-3,c(2,4:5,7)] <- m[ 3, 1:4] <- m[1:3, 6] <- 0
 (mT <- as(m, "TsparseMatrix"))
@@ -108,5 +90,3 @@ T2 ## has only three non-zero entries, as for repeated (i,j)'s,
    ## the corresponding x's are "implicitly" added
 stopifnot(nnzero(T2) == 3)
 }
-\keyword{classes}
-\keyword{algebra}

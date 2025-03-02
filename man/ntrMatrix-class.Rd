@@ -1,31 +1,12 @@
 \name{ntrMatrix-class}
 \title{Triangular Dense Logical Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
-\alias{ntpMatrix-class}
 \alias{ntrMatrix-class}
-%
-\alias{!,ntpMatrix-method}
-\alias{coerce,matrix,ntpMatrix-method}
-\alias{coerce,ntpMatrix,dtpMatrix-method}
-\alias{coerce,ntpMatrix,ltpMatrix-method}
-\alias{coerce,ntpMatrix,ngeMatrix-method}
-\alias{coerce,ntpMatrix,nspMatrix-method}
-\alias{coerce,ntpMatrix,ntCMatrix-method}
-\alias{coerce,ntpMatrix,ntRMatrix-method}
-\alias{coerce,ntpMatrix,ntTMatrix-method}
-\alias{coerce,ntpMatrix,ntrMatrix-method}
-%
-\alias{!,ntrMatrix-method}
-\alias{coerce,matrix,ntrMatrix-method}
-\alias{coerce,ntrMatrix,dtrMatrix-method}
-\alias{coerce,ntrMatrix,ltrMatrix-method}
-\alias{coerce,ntrMatrix,ngeMatrix-method}
-\alias{coerce,ntrMatrix,nsyMatrix-method}
-\alias{coerce,ntrMatrix,ntCMatrix-method}
-\alias{coerce,ntrMatrix,ntRMatrix-method}
-\alias{coerce,ntrMatrix,ntTMatrix-method}
-\alias{coerce,ntrMatrix,ntpMatrix-method}
+\alias{ntpMatrix-class}
 %
 \description{
   The \code{"ntrMatrix"} class is the class of triangular, dense,
@@ -60,13 +41,16 @@
 \section{Methods}{
   Currently, mainly \code{\link{t}()} and coercion methods (for
   \code{\link{as}(.)}; use, e.g.,
-  \code{\link{showMethods}(class="nsyMatrix")} for details.
+  \code{\link{showMethods}(class="ntrMatrix")} for details.
 }
 \seealso{
   Classes \code{\linkS4class{ngeMatrix}}, \code{\linkS4class{Matrix}};
   function \code{\link[base]{t}}
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 showClass("ntrMatrix")
 
 str(new("ntpMatrix"))
@@ -76,4 +60,3 @@ str(nutp <- pack(nutr)) # packed matrix: only 10 = 4*(4+1)/2 entries
 ## but this one is:
 stopifnot(all.equal(nutp, pack(!!nutp)))
 }
-\keyword{classes}

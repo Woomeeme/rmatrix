@@ -93,13 +93,13 @@ function(x,
 
                 ## Here: use "smart" default !
                 if(is.null(lwd)) {
-                    wh <- grid::current.viewport()[c("width", "height")]
+                    wh <- current.viewport()[c("width", "height")]
                     ## wh : current viewport dimension in pixel
                     wh <- (par("cra") / par("cin")) *
-                        c(grid::convertWidth(wh$width, "inches",
-                                             valueOnly = TRUE),
-                          grid::convertHeight(wh$height, "inches",
-                                              valueOnly = TRUE))
+                        c(convertWidth(wh$width, "inches",
+                                       valueOnly = TRUE),
+                          convertHeight(wh$height, "inches",
+                                        valueOnly = TRUE))
 
                     pSize <- wh/di ## size of one matrix-entry in pixels
                     pA <- prod(pSize) # the "area"
@@ -110,7 +110,7 @@ function(x,
                         else if(p1 > 3) 0.5
                         else 0.2
                     ## browser()
-                    Matrix.msg("rectangle size ",
+                    Matrix.message("rectangle size ",
                                paste(round(pSize, 1L), collapse = " x "),
                                " [pixels];  --> lwd :", formatC(lwd))
                 } else stopifnot(is.numeric(lwd), all(lwd >= 0)) # allow 0
@@ -140,14 +140,19 @@ function(x,
               ...)
 }
 
-setMethod("image", "dgTMatrix", .image.dgT)
+setMethod("image", c(x = "dgTMatrix"), .image.dgT)
 
-setMethod("image", "Matrix",
-          function(x, ...)
-              image(..sparse2d(.sparse2g(as(x, "TsparseMatrix"))), ...))
+setMethod("image", c(x = "Matrix"),
+          function(x, ...) {
+              if(.M.kind(x) == "z")
+                  stop(gettextf("%s(<%s>) is not yet implemented",
+                                "image", "zMatrix"),
+                       domain = NA)
+              image(.M2kind(.M2gen(.M2T(x)), "d"), ...)
+          })
 
-setMethod("image", "CHMfactor",
+setMethod("image", c(x = "CHMfactor"),
           function(x, ...)
-              image(.sparse2g(as(x, "TsparseMatrix")), ...))
+              image(.M2gen(.M2T(expand1(x, "L"))), ...))
 
 rm(.image.dgT)

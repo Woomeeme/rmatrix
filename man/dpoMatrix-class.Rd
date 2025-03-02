@@ -1,10 +1,14 @@
 \name{dpoMatrix-class}
 \title{Positive Semi-definite Dense (Packed | Non-packed) Numeric Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{dpoMatrix-class}
 \alias{dppMatrix-class}
 \alias{corMatrix-class}
+\alias{copMatrix-class}
 %
 \alias{Arith,dpoMatrix,logical-method}
 \alias{Arith,dpoMatrix,numeric-method}
@@ -27,23 +31,28 @@
 \alias{Ops,dppMatrix,numeric-method}
 \alias{Ops,logical,dppMatrix-method}
 \alias{Ops,numeric,dppMatrix-method}
-\alias{coerce,dppMatrix,corMatrix-method}
+\alias{coerce,dppMatrix,copMatrix-method}
 \alias{coerce,dppMatrix,dpoMatrix-method}
 \alias{coerce,matrix,dppMatrix-method}
 \alias{determinant,dppMatrix,logical-method}
 %
+\alias{coerce,corMatrix,copMatrix-method}
 \alias{coerce,matrix,corMatrix-method}
+%
+\alias{coerce,copMatrix,corMatrix-method}
+\alias{coerce,matrix,copMatrix-method}
 %
 \description{
   \itemize{
-    \item{The \code{"dpoMatrix"} class is the class of
-      positive-semidefinite symmetric matrices in nonpacked storage.}
-    \item{The \code{"dppMatrix"} class is the same except in packed
+    \item The \code{"dpoMatrix"} class is the class of
+      positive-semidefinite symmetric matrices in nonpacked storage.
+    \item The \code{"dppMatrix"} class is the same except in packed
       storage.  Only the upper triangle or the lower triangle is
-      required to be available.}
-    \item{The \code{"corMatrix"} class of correlation matrices extends
-      \code{"dpoMatrix"} with a slot \code{sd}, which allows to restore
-      the original covariance matrix.}
+      required to be available.
+    \item The \code{"corMatrix"} and \code{"copMatrix"} classes
+      represent correlation matrices.  They extend \code{"dpoMatrix"}
+      and \code{"dppMatrix"}, respectively, with an additional slot
+      \code{sd} allowing restoration of the original covariance matrix.
   }
 }
 \section{Objects from the Class}{Objects can be created by calls of the
@@ -62,10 +71,10 @@
     \item{\code{factors}:}{Object of class \code{"list"}.  A named
       list of factorizations that have been computed for the matrix.}
 
-    \item{\code{sd}:}{(for \code{"corMatrix"}) a \code{\link{numeric}}
-      vector of length \code{n} containing the (original)
-      \eqn{\sqrt{var(.)}}{sqrt(var(.))} entries which allow
-	reconstruction of a covariance matrix from the correlation matrix.}
+    \item{\code{sd}:}{(for \code{"corMatrix"} and \code{"copMatrix"})
+      a \code{\link{numeric}} vector of length \code{n} containing the
+      (original) \eqn{\sqrt{var(.)}}{sqrt(var(.))} entries which allow
+      reconstruction of a covariance matrix from the correlation matrix.}
   }
 }
 \section{Extends}{
@@ -86,8 +95,8 @@
       \code{x}.  The \code{norm} can be \code{"O"} for the
       one-norm (the default) or \code{"I"} for the infinity-norm.  For
       symmetric matrices the result does not depend on the norm.}
-    \item{solve}{\code{signature(a = "dpoMatrix", b = "....")}}{, and}
-    \item{solve}{\code{signature(a = "dppMatrix", b = "....")}}{work
+    \item{solve}{\code{signature(a = "dpoMatrix", b = "....")}, and}
+    \item{solve}{\code{signature(a = "dppMatrix", b = "....")}  work
       via the Cholesky composition, see also the Matrix \code{\link{solve-methods}}.}
     \item{Arith}{\code{signature(e1 = "dpoMatrix", e2 = "numeric")} (and
       quite a few other signatures): The result of (\dQuote{elementwise}
@@ -121,20 +130,23 @@
   \code{\link[base]{chol}}, \code{\link[base]{solve}}, \code{\link{crossprod}}.
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 h6 <- Hilbert(6)
 rcond(h6)
 str(h6)
 h6 * 27720 # is ``integer''
 solve(h6)
-str(hp6 <- as(h6, "dppMatrix"))
+str(hp6 <- pack(h6))
 
 ### Note that  as(*, "corMatrix")  *scales* the matrix
 (ch6 <- as(h6, "corMatrix"))
-stopifnot(all.equal(h6 * 27720, round(27720 * h6), tolerance = 1e-14),
-          all.equal(ch6@sd^(-2), 2*(1:6)-1, tolerance= 1e-12))
-chch <- chol(ch6)
+stopifnot(all.equal(as(h6 * 27720, "dsyMatrix"), round(27720 * h6),
+                    tolerance = 1e-14),
+          all.equal(ch6@sd^(-2), 2*(1:6)-1,
+                    tolerance = 1e-12))
+chch <- Cholesky(ch6, perm = FALSE)
 stopifnot(identical(chch, ch6@factors$Cholesky),
-          all(abs(crossprod(chch) - ch6) < 1e-10))
+          all(abs(crossprod(as(chch, "dtrMatrix")) - ch6) < 1e-10))
 }
-\keyword{classes}
-\keyword{algebra}

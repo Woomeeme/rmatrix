@@ -1,100 +1,81 @@
-#ifndef MATRIX_VALIDATE_H
-#define MATRIX_VALIDATE_H
+#ifndef MATRIX_VALIDITY_H
+#define MATRIX_VALIDITY_H
 
-#include "Mutils.h"
+#include <Rinternals.h>
 
-SEXP Dim_validate(SEXP dim, const char* domain);
-SEXP R_Dim_validate(SEXP dim);
+char* Dim_validate(SEXP);
+SEXP R_Dim_validate(SEXP);
 
-SEXP DimNames_validate(SEXP dimnames, int pdim[]);
-SEXP R_DimNames_validate(SEXP dimnames, SEXP dim);
-    
-#ifdef Matrix_SupportingCachedMethods
-SEXP R_Dim_validate_old(SEXP obj, SEXP domain);
-SEXP R_DimNames_validate_old(SEXP obj);
-#endif
+char* DimNames_validate(SEXP, int[]);
+SEXP R_DimNames_validate(SEXP, SEXP);
 
-SEXP R_DimNames_fixup(SEXP dn);
+SEXP R_DimNames_fixup(SEXP);
 
-SEXP Matrix_validate(SEXP obj);
-SEXP MatrixFactorization_validate(SEXP obj);
+SEXP Matrix_validate(SEXP);
+SEXP MatrixFactorization_validate(SEXP);
 
-SEXP compMatrix_validate(SEXP obj);
+SEXP nMatrix_validate(SEXP);
+SEXP lMatrix_validate(SEXP);
+SEXP iMatrix_validate(SEXP);
+SEXP dMatrix_validate(SEXP);
+SEXP zMatrix_validate(SEXP);
 
-SEXP dMatrix_validate(SEXP obj);
-SEXP lMatrix_validate(SEXP obj);
-SEXP ndenseMatrix_validate(SEXP obj);
-SEXP iMatrix_validate(SEXP obj);
-SEXP zMatrix_validate(SEXP obj);
+SEXP generalMatrix_validate(SEXP);
+SEXP symmetricMatrix_validate(SEXP);
+SEXP triangularMatrix_validate(SEXP);
+SEXP diagonalMatrix_validate(SEXP);
+SEXP indMatrix_validate(SEXP);
+SEXP pMatrix_validate(SEXP);
 
-SEXP symmetricMatrix_validate(SEXP obj);
-SEXP triangularMatrix_validate(SEXP obj);
+SEXP CsparseMatrix_validate(SEXP);
+SEXP RsparseMatrix_validate(SEXP);
+SEXP TsparseMatrix_validate(SEXP);
 
-SEXP diagonalMatrix_validate(SEXP obj);
-SEXP indMatrix_validate(SEXP obj);
-SEXP pMatrix_validate(SEXP obj);
+SEXP sCMatrix_validate(SEXP);
+SEXP tCMatrix_validate(SEXP);
+SEXP sRMatrix_validate(SEXP);
+SEXP tRMatrix_validate(SEXP);
+SEXP sTMatrix_validate(SEXP);
+SEXP tTMatrix_validate(SEXP);
 
-SEXP CsparseMatrix_validate(SEXP obj);
-SEXP RsparseMatrix_validate(SEXP obj);
-SEXP TsparseMatrix_validate(SEXP obj);
+SEXP xgCMatrix_validate(SEXP);
+SEXP xsCMatrix_validate(SEXP);
+SEXP xtCMatrix_validate(SEXP);
+SEXP xgRMatrix_validate(SEXP);
+SEXP xsRMatrix_validate(SEXP);
+SEXP xtRMatrix_validate(SEXP);
+SEXP xgTMatrix_validate(SEXP);
+SEXP xsTMatrix_validate(SEXP);
+SEXP xtTMatrix_validate(SEXP);
 
-SEXP sCMatrix_validate(SEXP obj);
-SEXP tCMatrix_validate(SEXP obj);
+SEXP unpackedMatrix_validate(SEXP);
+SEXP packedMatrix_validate(SEXP);
 
-SEXP sRMatrix_validate(SEXP obj);
-SEXP tRMatrix_validate(SEXP obj);
+SEXP dpoMatrix_validate(SEXP);
+SEXP dppMatrix_validate(SEXP);
+SEXP corMatrix_validate(SEXP);
+SEXP copMatrix_validate(SEXP);
 
-SEXP sTMatrix_validate(SEXP obj);
-SEXP tTMatrix_validate(SEXP obj);
+SEXP sparseVector_validate(SEXP);
+SEXP lsparseVector_validate(SEXP);
+SEXP isparseVector_validate(SEXP);
+SEXP dsparseVector_validate(SEXP);
+SEXP zsparseVector_validate(SEXP);
 
-SEXP xgCMatrix_validate(SEXP obj);
-SEXP xsCMatrix_validate(SEXP obj);
-SEXP xtCMatrix_validate(SEXP obj);
+SEXP denseLU_validate(SEXP);
+SEXP sparseLU_validate(SEXP);
+SEXP sparseQR_validate(SEXP);
+SEXP BunchKaufman_validate(SEXP);
+SEXP pBunchKaufman_validate(SEXP);
+SEXP Cholesky_validate(SEXP);
+SEXP pCholesky_validate(SEXP);
+SEXP CHMfactor_validate(SEXP);
+SEXP CHMsimpl_validate(SEXP);
+SEXP CHMsuper_validate(SEXP);
+SEXP dCHMsimpl_validate(SEXP);
+SEXP dCHMsuper_validate(SEXP);
+SEXP Schur_validate(SEXP);
 
-SEXP xgRMatrix_validate(SEXP obj);
-SEXP xsRMatrix_validate(SEXP obj);
-SEXP xtRMatrix_validate(SEXP obj);
+void validObject(SEXP, const char *);
 
-SEXP xgTMatrix_validate(SEXP obj);
-SEXP xsTMatrix_validate(SEXP obj);
-SEXP xtTMatrix_validate(SEXP obj);
-
-SEXP unpackedMatrix_validate(SEXP obj);
-SEXP packedMatrix_validate(SEXP obj);
-
-SEXP dpoMatrix_validate(SEXP obj);
-SEXP dppMatrix_validate(SEXP obj);
-
-SEXP corMatrix_validate(SEXP obj);
-
-SEXP Cholesky_validate(SEXP obj);
-SEXP pCholesky_validate(SEXP obj);
-
-SEXP BunchKaufman_validate(SEXP obj);
-SEXP pBunchKaufman_validate(SEXP obj);
-
-SEXP Schur_validate(SEXP obj);
-
-SEXP denseLU_validate(SEXP obj);
-SEXP sparseLU_validate(SEXP obj);
-
-SEXP sparseQR_validate(SEXP obj);
-
-SEXP CHMfactor_validate(SEXP obj);
-SEXP CHMsimpl_validate(SEXP obj);
-SEXP CHMsuper_validate(SEXP obj);
-
-#define UPRET(_N_, _S_)				\
-    do {					\
-	UNPROTECT(_N_);				\
-	return mkString(_(_S_));		\
-    } while (0)
-
-#define FRUPRET(_PTR_, _M_, _N_, _S_)		\
-    do {					\
-	Free_FROM(_PTR_, _M_);			\
-	UNPROTECT(_N_);				\
-	return mkString(_(_S_));		\
-    } while (0)
-
-#endif
+#endif /* MATRIX_VALIDITY_H */

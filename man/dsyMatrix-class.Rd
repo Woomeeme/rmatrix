@@ -1,44 +1,28 @@
 \name{dsyMatrix-class}
 \title{Symmetric Dense (Packed or Unpacked) Numeric Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
-\alias{dspMatrix-class}
 \alias{dsyMatrix-class}
-%
-\alias{coerce,dspMatrix,dgeMatrix-method}
-\alias{coerce,dspMatrix,dpoMatrix-method}
-\alias{coerce,dspMatrix,dppMatrix-method}
-\alias{coerce,dspMatrix,dsCMatrix-method}
-\alias{coerce,dspMatrix,dsRMatrix-method}
-\alias{coerce,dspMatrix,dsTMatrix-method}
-\alias{coerce,dspMatrix,dsyMatrix-method}
-\alias{coerce,dspMatrix,dtpMatrix-method}
-\alias{coerce,dspMatrix,lspMatrix-method}
-\alias{coerce,dspMatrix,nspMatrix-method}
-\alias{coerce,matrix,dspMatrix-method}
-\alias{determinant,dspMatrix,logical-method}
+\alias{dspMatrix-class}
 %
 \alias{coerce,dsyMatrix,corMatrix-method}
-\alias{coerce,dsyMatrix,dgeMatrix-method}
 \alias{coerce,dsyMatrix,dpoMatrix-method}
-\alias{coerce,dsyMatrix,dppMatrix-method}
-\alias{coerce,dsyMatrix,dsCMatrix-method}
-\alias{coerce,dsyMatrix,dsRMatrix-method}
-\alias{coerce,dsyMatrix,dsTMatrix-method}
-\alias{coerce,dsyMatrix,dspMatrix-method}
-\alias{coerce,dsyMatrix,dtrMatrix-method}
-\alias{coerce,dsyMatrix,lsyMatrix-method}
-\alias{coerce,dsyMatrix,nsyMatrix-method}
-\alias{coerce,matrix,dsyMatrix-method}
 \alias{determinant,dsyMatrix,logical-method}
+%
+\alias{coerce,dspMatrix,copMatrix-method}
+\alias{coerce,dspMatrix,dppMatrix-method}
+\alias{determinant,dspMatrix,logical-method}
 %
 \description{
   \itemize{
-    \item{The \code{"dsyMatrix"} class is the class of symmetric, dense matrices
-      in \emph{non-packed} storage and}
-    \item{\code{"dspMatrix"} is the class of symmetric dense matrices in
+    \item The \code{"dsyMatrix"} class is the class of symmetric, dense matrices
+      in \emph{non-packed} storage and
+    \item \code{"dspMatrix"} is the class of symmetric dense matrices in
       \emph{packed} storage, see \code{\link{pack}()}.  Only the upper
-      triangle or the lower triangle is stored.}
+      triangle or the lower triangle is stored.
   }
 }
 \section{Objects from the Class}{
@@ -68,12 +52,6 @@
 }
 \section{Methods}{
   \describe{
-    \item{coerce}{\code{signature(from = "ddenseMatrix", to = "dgeMatrix")}}
-    %
-    \item{coerce}{\code{signature(from = "dspMatrix", to = "matrix")}}
-    \item{coerce}{\code{signature(from = "dsyMatrix", to = "matrix")}}
-    \item{coerce}{\code{signature(from = "dsyMatrix", to = "dspMatrix")}}
-    \item{coerce}{\code{signature(from = "dspMatrix", to = "dsyMatrix")}}
     \item{norm}{\code{signature(x = "dspMatrix", type = "character")}, or
       \code{x = "dsyMatrix"} or \code{type = "missing"}: Computes the
       matrix norm of the desired type, see, \code{\link{norm}}.}
@@ -101,6 +79,9 @@
   \code{\link[base]{t}}
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 ## Only upper triangular part matters (when uplo == "U" as per default)
 (sy2 <- new("dsyMatrix", Dim = as.integer(c(2,2)), x = c(14, NA,32,77)))
 str(t(sy2)) # uplo = "L", and the lower tri. (i.e. NA is replaced).
@@ -127,4 +108,3 @@ stopifnot(all(S1 == S2)) # equal "seen as matrix", but differ internally :
 str(S1)
 S2@x
 }
-\keyword{classes}

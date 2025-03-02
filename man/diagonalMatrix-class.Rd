@@ -1,43 +1,24 @@
 \name{diagonalMatrix-class}
 \title{Class "diagonalMatrix" of Diagonal Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
+%
 \alias{diagonalMatrix-class}
 %
+\alias{-,diagonalMatrix,missing-method}
 \alias{Math,diagonalMatrix-method}
 \alias{Ops,diagonalMatrix,triangularMatrix-method}
-\alias{as.logical,diagonalMatrix-method}
-\alias{as.numeric,diagonalMatrix-method}
-\alias{as.vector,diagonalMatrix-method}
-\alias{cbind2,diagonalMatrix,sparseMatrix-method}
-\alias{coerce,diagonalMatrix,CsparseMatrix-method}
-\alias{coerce,diagonalMatrix,RsparseMatrix-method}
-\alias{coerce,diagonalMatrix,TsparseMatrix-method}
-\alias{coerce,diagonalMatrix,dMatrix-method}
-\alias{coerce,diagonalMatrix,ddenseMatrix-method}
-\alias{coerce,diagonalMatrix,denseMatrix-method}
-\alias{coerce,diagonalMatrix,dsparseMatrix-method}
-\alias{coerce,diagonalMatrix,generalMatrix-method}
-\alias{coerce,diagonalMatrix,lMatrix-method}
-\alias{coerce,diagonalMatrix,ldenseMatrix-method}
-\alias{coerce,diagonalMatrix,lsparseMatrix-method}
-\alias{coerce,diagonalMatrix,matrix-method}
-\alias{coerce,diagonalMatrix,nMatrix-method}
-\alias{coerce,diagonalMatrix,ndenseMatrix-method}
-\alias{coerce,diagonalMatrix,nsparseMatrix-method}
-\alias{coerce,diagonalMatrix,packedMatrix-method}
-\alias{coerce,diagonalMatrix,sparseVector-method}
-\alias{coerce,diagonalMatrix,nMatrix-method}
+\alias{Summary,diagonalMatrix-method}
 \alias{coerce,diagonalMatrix,symmetricMatrix-method}
 \alias{coerce,diagonalMatrix,triangularMatrix-method}
-\alias{coerce,diagonalMatrix,unpackedMatrix-method}
-\alias{coerce,diagonalMatrix,vector-method}
 \alias{coerce,matrix,diagonalMatrix-method}
 \alias{determinant,diagonalMatrix,logical-method}
 \alias{diag,diagonalMatrix-method}
 \alias{diag<-,diagonalMatrix-method}
 \alias{log,diagonalMatrix-method}
 \alias{print,diagonalMatrix-method}
-\alias{rbind2,diagonalMatrix,sparseMatrix-method}
 \alias{show,diagonalMatrix-method}
 \alias{summary,diagonalMatrix-method}
 \alias{t,diagonalMatrix-method}
@@ -49,7 +30,7 @@
   created from it.}
 \section{Slots}{
   \describe{
-    \item{\code{diag}:}{code{"character"} string, either \code{"U"} or
+    \item{\code{diag}:}{\code{\link{character}} string, either \code{"U"} or
       \code{"N"}, where \code{"U"} means \sQuote{unit-diagonal}.}
     \item{\code{Dim}:}{matrix dimension, and}
     \item{\code{Dimnames}:}{the \code{\link{dimnames}}, a
@@ -127,4 +108,3 @@ solve(D5)# efficient as is diagonal
 rbind2(cbind2(I5, D5),
        cbind2(D5, I5))
 }
-\keyword{classes}

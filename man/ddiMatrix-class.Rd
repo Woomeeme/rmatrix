@@ -1,6 +1,9 @@
 \name{ddiMatrix-class}
 \title{Class "ddiMatrix" of Diagonal Numeric Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{ddiMatrix-class}
 %
@@ -20,7 +23,6 @@
 \alias{*,ddiMatrix,ddenseMatrix-method}
 \alias{*,ddiMatrix,ldenseMatrix-method}
 \alias{*,ddiMatrix,ndenseMatrix-method}
-\alias{-,ddiMatrix,missing-method}
 \alias{/,ddiMatrix,Matrix-method}
 \alias{/,ddiMatrix,ddenseMatrix-method}
 \alias{/,ddiMatrix,ldenseMatrix-method}
@@ -35,32 +37,10 @@
 \alias{Ops,ddiMatrix,dMatrix-method}
 \alias{Ops,ddiMatrix,ddiMatrix-method}
 \alias{Ops,ddiMatrix,ldiMatrix-method}
+\alias{Ops,ddiMatrix,ndiMatrix-method}
 \alias{Ops,ddiMatrix,logical-method}
 \alias{Ops,ddiMatrix,numeric-method}
 \alias{Ops,ddiMatrix,sparseMatrix-method}
-\alias{Summary,ddiMatrix-method}
-\alias{as.numeric,ddiMatrix-method}
-\alias{cbind2,ddiMatrix,atomicVector-method}
-\alias{cbind2,ddiMatrix,matrix-method}
-\alias{cbind2,matrix,ddiMatrix-method}
-\alias{coerce,ddiMatrix,dgCMatrix-method}
-\alias{coerce,ddiMatrix,dgRMatrix-method}
-\alias{coerce,ddiMatrix,dgTMatrix-method}
-\alias{coerce,ddiMatrix,dgeMatrix-method}
-\alias{coerce,ddiMatrix,dsCMatrix-method}
-\alias{coerce,ddiMatrix,dsRMatrix-method}
-\alias{coerce,ddiMatrix,dsTMatrix-method}
-\alias{coerce,ddiMatrix,dsyMatrix-method}
-\alias{coerce,ddiMatrix,dtCMatrix-method}
-\alias{coerce,ddiMatrix,dtRMatrix-method}
-\alias{coerce,ddiMatrix,dtTMatrix-method}
-\alias{coerce,ddiMatrix,dtrMatrix-method}
-\alias{coerce,ddiMatrix,ldiMatrix-method}
-\alias{prod,ddiMatrix-method}
-\alias{rbind2,ddiMatrix,atomicVector-method}
-\alias{rbind2,ddiMatrix,matrix-method}
-\alias{rbind2,matrix,ddiMatrix-method}
-\alias{sum,ddiMatrix-method}
 %
 \description{The class \code{"ddiMatrix"} of numerical diagonal matrices.
   %% FIXME add more
@@ -99,6 +79,9 @@
   Class \code{\linkS4class{diagonalMatrix}} and function \code{\link{Diagonal}}.
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 (d2 <- Diagonal(x = c(10,1)))
 str(d2)
 ## slightly larger in internal size:
@@ -111,4 +94,3 @@ chol(d2) # trivial
 stopifnot(is(cd2 <- chol(d2), "ddiMatrix"),
           all.equal(cd2@x, c(sqrt(10),1)))
 }
-\keyword{classes}

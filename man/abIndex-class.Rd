@@ -1,7 +1,8 @@
 \name{abIndex-class}
 \title{Class "abIndex" of Abstract Index Vectors}
+%
 \docType{class}
-\Rdversion{1.1}
+\keyword{classes}
 %
 \alias{abIndex-class}
 \alias{seqMat-class} % not yet documented {unexported}
@@ -22,12 +23,13 @@
 \alias{coerce,abIndex,vector-method}
 \alias{coerce,logical,abIndex-method}
 \alias{coerce,numeric,abIndex-method}
+\alias{drop,abIndex-method}
+\alias{length,abIndex-method}
+\alias{show,abIndex-method}
+%
 \alias{coerce,numeric,seqMat-method}
 \alias{coerce,seqMat,abIndex-method}
 \alias{coerce,seqMat,numeric-method}
-\alias{drop,abIndex-method} % not yet documented {experimental}
-\alias{length,abIndex-method}
-\alias{show,abIndex-method}
 %
 \description{
   The \code{"abIndex"} \code{\link{class}}, short for \dQuote{Abstract
@@ -92,6 +94,9 @@
   \code{\link{numeric}}% ... FIXME
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 showClass("abIndex")
 ii <- c(-3:40, 20:70)
 str(ai <- as(ii, "abIndex"))# note
@@ -101,4 +106,3 @@ ai # -> show() method
 stopifnot(identical(-3:20,
                     as(abIseq1(-3,20), "vector")))
 }
-\keyword{classes}

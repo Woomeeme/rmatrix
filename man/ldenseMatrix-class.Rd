@@ -1,20 +1,26 @@
 \name{ldenseMatrix-class}
 \title{Virtual Class "ldenseMatrix" of Dense Logical Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{ldenseMatrix-class}
 %
+\alias{!,ldenseMatrix-method}
 \alias{&,ldenseMatrix,ddiMatrix-method}
 \alias{&,ldenseMatrix,ldiMatrix-method}
+\alias{&,ldenseMatrix,ndiMatrix-method}
 \alias{*,ldenseMatrix,ddiMatrix-method}
 \alias{*,ldenseMatrix,ldiMatrix-method}
+\alias{*,ldenseMatrix,ndiMatrix-method}
 \alias{Logic,ldenseMatrix,lsparseMatrix-method}
 \alias{Ops,ldenseMatrix,ldenseMatrix-method}
-\alias{Summary,ldenseMatrix-method}
 \alias{^,ldenseMatrix,ddiMatrix-method}
 \alias{^,ldenseMatrix,ldiMatrix-method}
+\alias{^,ldenseMatrix,ndiMatrix-method}
 \alias{coerce,matrix,ldenseMatrix-method}
-\alias{coerce,numLike,ldenseMatrix-method}
+\alias{coerce,vector,ldenseMatrix-method}
 \alias{which,ldenseMatrix-method}
 %
 \description{
@@ -36,10 +42,7 @@ Class \code{"Matrix"}, by class \code{"denseMatrix"}.
 }
 \section{Methods}{
   \describe{
-    \item{coerce}{\code{signature(from = "matrix", to = "ldenseMatrix")}: ... }
-    \item{coerce}{\code{signature(from = "ldenseMatrix", to = "matrix")}: ... }
     \item{as.vector}{\code{signature(x = "ldenseMatrix", mode = "missing")}: ...}
-
     \item{which}{\code{signature(x = "ndenseMatrix")}, semantically
       equivalent to \pkg{base} function \code{\link{which}(x, arr.ind)};
       for details, see the \code{\linkS4class{lMatrix}} class documentation.}
@@ -53,4 +56,3 @@ showClass("ldenseMatrix")
 
 as(diag(3) > 0, "ldenseMatrix")
 }
-\keyword{classes}

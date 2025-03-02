@@ -1,34 +1,14 @@
 \name{dtCMatrix-class}
 \title{Triangular, (compressed) sparse column matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{dtCMatrix-class}
 \alias{dtTMatrix-class}
 %
 \alias{Arith,dtCMatrix,dtCMatrix-method}
-\alias{coerce,dtCMatrix,dgCMatrix-method}
-\alias{coerce,dtCMatrix,dgTMatrix-method}
-\alias{coerce,dtCMatrix,dgeMatrix-method}
-\alias{coerce,dtCMatrix,dsCMatrix-method}
-\alias{coerce,dtCMatrix,dtRMatrix-method}
-\alias{coerce,dtCMatrix,dtTMatrix-method}
-\alias{coerce,dtCMatrix,dtpMatrix-method}
-\alias{coerce,dtCMatrix,dtrMatrix-method}
-\alias{coerce,dtCMatrix,ltCMatrix-method}
-\alias{coerce,dtCMatrix,ntCMatrix-method}
-\alias{coerce,matrix,dtCMatrix-method}
-%
-\alias{coerce,dtTMatrix,dgCMatrix-method}
-\alias{coerce,dtTMatrix,dgTMatrix-method}
-\alias{coerce,dtTMatrix,dgeMatrix-method}
-\alias{coerce,dtTMatrix,dsTMatrix-method}
-\alias{coerce,dtTMatrix,dtCMatrix-method}
-\alias{coerce,dtTMatrix,dtRMatrix-method}
-\alias{coerce,dtTMatrix,dtpMatrix-method}
-\alias{coerce,dtTMatrix,dtrMatrix-method}
-\alias{coerce,dtTMatrix,ltTMatrix-method}
-\alias{coerce,dtTMatrix,ntTMatrix-method}
-\alias{coerce,matrix,dtTMatrix-method}
 %
 \description{The \code{"dtCMatrix"} class is a class of triangular, sparse
   matrices in the compressed, column-oriented format.  In this
@@ -76,11 +56,6 @@
 }
 \section{Methods}{
   \describe{
-    \item{coerce}{\code{signature(from = "dtCMatrix", to = "dgTMatrix")}}
-    \item{coerce}{\code{signature(from = "dtCMatrix", to = "dgeMatrix")}}
-    \item{coerce}{\code{signature(from = "dtTMatrix", to = "dgeMatrix")}}
-    \item{coerce}{\code{signature(from = "dtTMatrix", to = "dtrMatrix")}}
-    \item{coerce}{\code{signature(from = "dtTMatrix", to = "matrix")}}
     \item{solve}{\code{signature(a = "dtCMatrix", b = "....")}:
       sparse triangular solve (aka \dQuote{backsolve} or
       \dQuote{forwardsolve}), see \code{\link{solve-methods}}.}
@@ -98,8 +73,10 @@
   \code{\linkS4class{dgeMatrix}}, and \code{\linkS4class{dtrMatrix}}.
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 showClass("dtCMatrix")
-
 showClass("dtTMatrix")
 t1 <- new("dtTMatrix", x= c(3,7), i= 0:1, j=3:2, Dim= as.integer(c(4,4)))
 t1
@@ -144,5 +121,3 @@ stopifnot(
 )
 }%dont
 }
-\keyword{classes}
-\keyword{algebra}

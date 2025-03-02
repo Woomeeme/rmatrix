@@ -1,31 +1,12 @@
 \name{lsyMatrix-class}
 \title{Symmetric Dense Logical Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
-\alias{lspMatrix-class}
 \alias{lsyMatrix-class}
-%
-\alias{!,lsyMatrix-method}
-\alias{coerce,lspMatrix,dspMatrix-method}
-\alias{coerce,lspMatrix,lgeMatrix-method}
-\alias{coerce,lspMatrix,lsCMatrix-method}
-\alias{coerce,lspMatrix,lsRMatrix-method}
-\alias{coerce,lspMatrix,lsTMatrix-method}
-\alias{coerce,lspMatrix,lsyMatrix-method}
-\alias{coerce,lspMatrix,ltpMatrix-method}
-\alias{coerce,lspMatrix,nspMatrix-method}
-\alias{coerce,matrix,lspMatrix-method}
-%
-\alias{!,lspMatrix-method}
-\alias{coerce,lsyMatrix,dsyMatrix-method}
-\alias{coerce,lsyMatrix,lgeMatrix-method}
-\alias{coerce,lsyMatrix,lsCMatrix-method}
-\alias{coerce,lsyMatrix,lsRMatrix-method}
-\alias{coerce,lsyMatrix,lsTMatrix-method}
-\alias{coerce,lsyMatrix,lspMatrix-method}
-\alias{coerce,lsyMatrix,ltrMatrix-method}
-\alias{coerce,lsyMatrix,nsyMatrix-method}
-\alias{coerce,matrix,lsyMatrix-method}
+\alias{lspMatrix-class}
 %
 \description{
   The \code{"lsyMatrix"} class is the class of symmetric, dense logical
@@ -58,7 +39,7 @@
 \section{Methods}{
   Currently, mainly \code{\link{t}()} and coercion methods (for
   \code{\link{as}(.)}; use, e.g.,
-  \code{\link{showMethods}(class="dsyMatrix")} for details.
+  \code{\link{showMethods}(class="lsyMatrix")} for details.
 }
 %\references{}
 %\author{}
@@ -67,6 +48,9 @@
   \code{\link[base]{t}}
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 (M2 <- Matrix(c(TRUE, NA, FALSE, FALSE), 2, 2)) # logical dense (ltr)
 str(M2)
 # can
@@ -74,4 +58,3 @@ str(M2)
 as(sM, "symmetricMatrix")
 str(sM <- as(sM, "packedMatrix")) # packed symmetric
 }
-\keyword{classes}

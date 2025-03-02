@@ -1,31 +1,12 @@
 \name{ltrMatrix-class}
 \title{Triangular Dense Logical Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
-\alias{ltpMatrix-class}
 \alias{ltrMatrix-class}
-%
-\alias{!,ltpMatrix-method}
-\alias{coerce,ltpMatrix,dtpMatrix-method}
-\alias{coerce,ltpMatrix,lgeMatrix-method}
-\alias{coerce,ltpMatrix,ltCMatrix-method}
-\alias{coerce,ltpMatrix,ltRMatrix-method}
-\alias{coerce,ltpMatrix,ltTMatrix-method}
-\alias{coerce,ltpMatrix,lspMatrix-method}
-\alias{coerce,ltpMatrix,ltrMatrix-method}
-\alias{coerce,ltpMatrix,ntpMatrix-method}
-\alias{coerce,matrix,ltpMatrix-method}
-%
-\alias{!,ltrMatrix-method}
-\alias{coerce,ltrMatrix,dtrMatrix-method}
-\alias{coerce,ltrMatrix,lgeMatrix-method}
-\alias{coerce,ltrMatrix,ltCMatrix-method}
-\alias{coerce,ltrMatrix,ltRMatrix-method}
-\alias{coerce,ltrMatrix,ltTMatrix-method}
-\alias{coerce,ltrMatrix,lsyMatrix-method}
-\alias{coerce,ltrMatrix,ltpMatrix-method}
-\alias{coerce,ltrMatrix,ntrMatrix-method}
-\alias{coerce,matrix,ltrMatrix-method}
+\alias{ltpMatrix-class}
 %
 \description{
   The \code{"ltrMatrix"} class is the class of triangular, dense,
@@ -58,13 +39,16 @@
 \section{Methods}{
   Currently, mainly \code{\link{t}()} and coercion methods (for
   \code{\link{as}(.)}; use, e.g.,
-  \code{\link{showMethods}(class="ltpMatrix")} for details.
+  \code{\link{showMethods}(class="ltrMatrix")} for details.
 }
 \seealso{
   Classes \code{\linkS4class{lgeMatrix}}, \code{\linkS4class{Matrix}};
   function \code{\link[base]{t}}
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 showClass("ltrMatrix")
 
 str(new("ltpMatrix"))
@@ -74,4 +58,3 @@ str(lutp <- pack(lutr)) # packed matrix: only 10 = 4*(4+1)/2 entries
 ## but this one is:
 stopifnot(all.equal(lutp, pack(!!lutp)))
 }
-\keyword{classes}

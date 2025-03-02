@@ -1,18 +1,11 @@
 \name{dtpMatrix-class}
 \title{Packed Triangular Dense Matrices - "dtpMatrix"}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{dtpMatrix-class}
-%
-\alias{coerce,dtpMatrix,dgeMatrix-method}
-\alias{coerce,dtpMatrix,dspMatrix-method}
-\alias{coerce,dtpMatrix,dtCMatrix-method}
-\alias{coerce,dtpMatrix,dtRMatrix-method}
-\alias{coerce,dtpMatrix,dtTMatrix-method}
-\alias{coerce,dtpMatrix,dtrMatrix-method}
-\alias{coerce,dtpMatrix,ltpMatrix-method}
-\alias{coerce,dtpMatrix,ntpMatrix-method}
-\alias{coerce,matrix,dtpMatrix-method}
 %
 \description{The \code{"dtpMatrix"} class is the class of triangular,
   dense, numeric matrices in packed storage.  The \code{"dtrMatrix"}
@@ -49,8 +42,6 @@
     \item{\%*\%}{\code{signature(x = "dtpMatrix", y = "dgeMatrix")}:
       Matrix multiplication; ditto for several other signature
       combinations, see \code{showMethods("\%*\%", class = "dtpMatrix")}.}
-    \item{coerce}{\code{signature(from = "dtpMatrix", to = "dtrMatrix")}}
-    \item{coerce}{\code{signature(from = "dtpMatrix", to = "matrix")}}
     \item{determinant}{\code{signature(x = "dtpMatrix", logarithm = "logical")}:
       the \code{\link{determinant}(x)} trivially is
       \code{prod(diag(x))}, but computed on log scale to prevent over-
@@ -70,6 +61,9 @@
   Class \code{\linkS4class{dtrMatrix}}
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 showClass("dtrMatrix")
 
 example("dtrMatrix-class", echo=FALSE)
@@ -86,4 +80,3 @@ stopifnot(length(p1@x) == 3, length(pp@x) == 3,
 	  identical(t(ip1), solve(pp)), is(ip1, "dtpMatrix"),
 	  all.equal(as(solve(p1,p1), "diagonalMatrix"), Diagonal(2)))
 }
-\keyword{classes}

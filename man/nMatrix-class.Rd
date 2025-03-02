@@ -1,6 +1,9 @@
 \name{nMatrix-class}
 \title{Class "nMatrix" of Non-zero Pattern Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{nMatrix-class}
 %
@@ -25,9 +28,8 @@
 \alias{Ops,nMatrix,nMatrix-method}
 \alias{Ops,nMatrix,numeric-method}
 \alias{Ops,numeric,nMatrix-method}
-\alias{Summary,nMatrix-method}
 \alias{coerce,matrix,nMatrix-method}
-\alias{coerce,numLike,nMatrix-method}
+\alias{coerce,vector,nMatrix-method}
 %
 \description{
   The \code{nMatrix} class is the virtual \dQuote{mother} class of all
@@ -49,7 +51,6 @@
   }
 }
 \section{Methods}{
-  There is a bunch of coercion methods (for \code{\link{as}(..)}), e.g.,
   \describe{
     \item{coerce}{\code{signature(from = "matrix", to = "nMatrix")}:
       Note that these coercions (must) coerce \code{\link{NA}}s to
@@ -58,17 +59,6 @@
       \code{\linkS4class{sparseMatrix}} objects are coerced to
       \code{"nMatrix"} and hence to \code{\linkS4class{nsparseMatrix}}.
     }
-    \item{coerce}{\code{signature(from = "dMatrix", to = "nMatrix")}, and}
-    \item{coerce}{\code{signature(from = "lMatrix", to = "nMatrix")}:
-      For dense matrices with \code{\link{NA}}s, these
-      coercions are valid since \pkg{Matrix} version 1.2.0 (still with
-      a \code{\link{warning}} or a \code{\link{message}} if
-      \code{"Matrix.warn"}, or \code{"Matrix.verbose"}
-      \code{\link{options}} are set.)}
-
-    \item{coerce}{\code{signature(from = "nMatrix", to = "matrix")}: ... }
-    \item{coerce}{\code{signature(from = "nMatrix", to = "dMatrix")}: ... }
-    \item{coerce}{\code{signature(from = "nMatrix", to = "lMatrix")}: ... }
   }
 
   --- --- ---
@@ -98,5 +88,3 @@ as(L3, "nMatrix") # -> ntC*
 ## similar, not using Matrix()
 as(upper.tri(diag(3)), "nMatrix")# currently "ngTMatrix"
 }
-\keyword{classes}
-\keyword{algebra}

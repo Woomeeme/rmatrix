@@ -1,19 +1,12 @@
 \name{dsRMatrix-class}
 \title{Symmetric Sparse Compressed Row Matrices}
+%
 \docType{class}
+\keyword{array}
+\keyword{classes}
 %
 \alias{dsRMatrix-class}
 %
-\alias{coerce,dsRMatrix,CsparseMatrix-method}
-\alias{coerce,dsRMatrix,dgRMatrix-method}
-\alias{coerce,dsRMatrix,dsCMatrix-method}
-\alias{coerce,dsRMatrix,dsTMatrix-method}
-\alias{coerce,dsRMatrix,dspMatrix-method}
-\alias{coerce,dsRMatrix,dsyMatrix-method}
-\alias{coerce,dsRMatrix,dtRMatrix-method}
-\alias{coerce,dsRMatrix,lsRMatrix-method}
-\alias{coerce,dsRMatrix,nsRMatrix-method}
-\alias{coerce,matrix,dsRMatrix-method}
 \alias{determinant,dsRMatrix,logical-method}
 %
 \description{The \code{dsRMatrix} class is a class of symmetric, sparse
@@ -48,14 +41,13 @@
   }
 }
 \section{Extends}{
-  Classes \code{\linkS4class{RsparseMatrix}}, \code{\linkS4class{dsparseMatrix}} and
-  \code{\linkS4class{symmetricMatrix}}, directly.
+  Classes \code{\linkS4class{dsparseMatrix}},
+  \code{\linkS4class{symmetricMatrix}}, and
+  \code{\linkS4class{RsparseMatrix}}, directly.
 
-  Class \code{"dMatrix"}, by class \code{"dsparseMatrix"},
-  class \code{"sparseMatrix"}, by class \code{"dsparseMatrix"} or
-  \code{"RsparseMatrix"};
-  class \code{"compMatrix"} by class \code{"symmetricMatrix"} and of course,
-  class \code{"Matrix"}.
+  Class \code{"dMatrix"}, by class \code{"dsparseMatrix"};
+  class \code{"sparseMatrix"}, by classes \code{"dsparseMatrix"} and
+  \code{"RsparseMatrix"}.
 }
 \section{Methods}{
    \describe{
@@ -64,8 +56,6 @@
      \item{forceSymmetric}{\code{signature(x = "dsRMatrix", uplo = "character")}:
        if \code{uplo == x@uplo}, this trivially returns \code{x};
        otherwise \code{t(x)}.}
-
-     \item{coerce}{\code{signature(from = "dsCMatrix", to = "dsRMatrix")}}
    }
 }
 \seealso{
@@ -73,6 +63,9 @@
   \code{\linkS4class{dgTMatrix}}, and \code{\linkS4class{dgeMatrix}}.
 }
 \examples{
+\dontshow{ % for R_DEFAULT_PACKAGES=NULL
+library(utils, pos = "package:base", verbose = FALSE)
+}
 (m0 <- new("dsRMatrix"))
 m2 <- new("dsRMatrix", Dim = c(2L,2L),
           x = c(3,1), j = c(1L,1L), p = 0:2)
@@ -83,5 +76,3 @@ str(m2)
 dR <- as(ds2, "RsparseMatrix")
 dR # dsRMatrix
 }
-\keyword{classes}
-\keyword{algebra}
